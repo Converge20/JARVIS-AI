@@ -4,6 +4,10 @@
 
 JARVIS-AI is an original, futuristic personal assistant prototype built with React, TypeScript, and Vite. The first milestone brings a cinematic command center together with practical, local task management. It requires no API keys, account, backend, or paid services.
 
+![JARVIS command center](docs/dashboard-desktop.jpg)
+
+[Mobile preview](docs/dashboard-mobile.jpg)
+
 ## Current capabilities
 
 - **Command center:** animated holographic core, rotating rings, subtle particles, responsive glass-like panels, live local clock, and task summaries.
