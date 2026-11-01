@@ -68,6 +68,7 @@ export function NeuralPanel({
   onScenario: (scenario: (typeof SCENARIOS)[number]) => void;
 }) {
   const root = useRef<HTMLDivElement>(null);
+  const [anatomyView, setAnatomyView] = useState(false);
   const [quality, setQuality] = useState<"full" | "eco" | "static">("full");
   const [webgl, setWebgl] = useState<boolean | null>(null);
   const [failed, setFailed] = useState(false);
@@ -75,7 +76,7 @@ export function NeuralPanel({
   const [reduced, setReduced] = useState(false);
   const [visible, setVisible] = useState(true);
   const [inView, setInView] = useState(true);
-  const [view, setView] = useState({ yaw: 0, pitch: 0, zoom: 1.12 });
+  const [view, setView] = useState({ yaw: 0, pitch: 0, zoom: 1.25 });
   const [scenario, setScenario] = useState<string | null>(null);
   const drag = useRef<{
     x: number;
@@ -126,10 +127,12 @@ export function NeuralPanel({
   const is3D = webgl && !failed && quality !== "static";
   const animate = motion && !reduced && visible && inView;
   const info = NEURAL_MODES[mode];
-  const fallback = <BrainFallback mode={mode} variant={variant} />;
+  const fallback = (
+    <BrainFallback mode={mode} variant={variant} anatomyView={anatomyView} />
+  );
   return (
     <section
-      className={`panel neural-panel neural-${info.accent}`}
+      className={`panel neural-panel neural-${info.accent} ${anatomyView ? "anatomy-inspection" : ""}`}
       aria-label="Neural intelligence interface"
     >
       <div className="neural-heading">
@@ -149,12 +152,19 @@ export function NeuralPanel({
         <span>
           <Layers3 size={13} />
           {is3D
-            ? "PROCEDURAL 3D ANATOMY"
+            ? "ANATOMICAL 3D MODEL"
             : webgl === null
               ? "INITIALIZING VIEW"
               : "LIGHTWEIGHT ANATOMY VIEW"}
         </span>
         <div>
+          <button
+            className="anatomy-toggle"
+            aria-pressed={anatomyView}
+            onClick={() => setAnatomyView((v) => !v)}
+          >
+            Anatomy · effects off
+          </button>
           <label className="quality-control">
             <Gauge size={13} />
             <select
@@ -180,7 +190,7 @@ export function NeuralPanel({
         <div className="anatomy-label anatomy-label-left">
           <span className="label-cross">+</span>
           <small>CEREBRAL CORTEX</small>
-          <span>Procedural surface</span>
+          <span>MRI-derived cortical surface</span>
           <i />
         </div>
         <div className="anatomy-label anatomy-label-right">
@@ -230,6 +240,8 @@ export function NeuralPanel({
             >
               <Suspense fallback={fallback}>
                 <BrainScene
+                  anatomyView={anatomyView}
+                  attempt={retry}
                   mode={mode}
                   variant={variant}
                   animate={animate}
@@ -261,7 +273,7 @@ export function NeuralPanel({
               </button>
               <button
                 aria-label="Reset brain view"
-                onClick={() => setView({ yaw: 0, pitch: 0, zoom: 1.12 })}
+                onClick={() => setView({ yaw: 0, pitch: 0, zoom: 1.25 })}
               >
                 <Focus size={14} />
               </button>
@@ -362,6 +374,14 @@ export function NeuralPanel({
           Artistic activity visualization. Not AI cognition or brain
           measurements.
         </span>
+        <a
+          className="anatomy-credit"
+          href="/models/ATTRIBUTION.md"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Model sources & licenses ↗
+        </a>
       </div>
     </section>
   );

@@ -38,9 +38,11 @@ test("renders the actual 3D brain, orange signals, all six states and five scena
       external.push(r.url());
   });
   await page.goto("/");
-  await expect(page.locator("canvas")).toBeVisible();
+  await expect(page.locator("canvas[data-anatomy-ready=true]")).toBeVisible({
+    timeout: 30000,
+  });
   await expect(
-    page.getByText("PROCEDURAL 3D ANATOMY", { exact: true }),
+    page.getByText("ANATOMICAL 3D MODEL", { exact: true }),
   ).toBeVisible();
   const states = page.getByRole("group", {
     name: "Neural demonstration states",
@@ -78,7 +80,9 @@ test("renders the actual 3D brain, orange signals, all six states and five scena
   await page.getByRole("button", { name: "Rotate brain right" }).click();
   await page.getByRole("button", { name: "Reset brain view" }).click();
   await page.getByLabel("Visual quality").selectOption("eco");
-  await expect(page.locator("canvas")).toBeVisible();
+  await expect(page.locator("canvas[data-anatomy-ready=true]")).toBeVisible({
+    timeout: 30000,
+  });
   expect(external).toEqual([]);
   expect(errors).toEqual([]);
 });
@@ -112,7 +116,9 @@ test("uses the same anatomy without WebGL and keeps tasks and conversation usabl
 });
 test("recovers gracefully from WebGL context loss", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator("canvas")).toBeVisible();
+  await expect(page.locator("canvas[data-anatomy-ready=true]")).toBeVisible({
+    timeout: 30000,
+  });
   await page
     .locator("canvas")
     .evaluate((canvas: HTMLCanvasElement) =>
@@ -126,7 +132,9 @@ test("recovers gracefully from WebGL context loss", async ({ page }) => {
   ).toBeVisible();
   await expect(page.locator(".brain-fallback")).toBeVisible();
   await page.getByRole("button", { name: "Retry 3D" }).click();
-  await expect(page.locator("canvas")).toBeVisible();
+  await expect(page.locator("canvas[data-anatomy-ready=true]")).toBeVisible({
+    timeout: 30000,
+  });
 });
 test("pauses WebGL draw calls for reduced motion and supports a deliberate static view", async ({
   page,
@@ -142,7 +150,9 @@ test("pauses WebGL draw calls for reduced motion and supports a deliberate stati
     };
   });
   await page.goto("/");
-  await expect(page.locator("canvas")).toBeVisible();
+  await expect(page.locator("canvas[data-anatomy-ready=true]")).toBeVisible({
+    timeout: 30000,
+  });
   await expect(page.locator(".neural-state-readout")).toContainText(
     "MOTION PAUSED",
   );
@@ -172,15 +182,19 @@ test("switching Static, Eco, and Full detail does not report intentional disposa
   page,
 }) => {
   await page.goto("/");
-  await expect(page.locator("canvas")).toBeVisible();
+  await expect(page.locator("canvas[data-anatomy-ready=true]")).toBeVisible({
+    timeout: 30000,
+  });
   for (const quality of ["static", "eco", "static", "full"]) {
     await page.getByLabel("Visual quality").selectOption(quality);
     if (quality === "static")
       await expect(page.locator("canvas")).toHaveCount(0);
     else {
-      await expect(page.locator("canvas")).toBeVisible();
+      await expect(page.locator("canvas[data-anatomy-ready=true]")).toBeVisible(
+        { timeout: 30000 },
+      );
       await expect(
-        page.getByText("PROCEDURAL 3D ANATOMY", { exact: true }),
+        page.getByText("ANATOMICAL 3D MODEL", { exact: true }),
       ).toBeVisible();
     }
     await page.waitForTimeout(250);
@@ -188,4 +202,35 @@ test("switching Static, Eco, and Full detail does not report intentional disposa
       page.getByText("3D rendering was interrupted.", { exact: false }),
     ).toHaveCount(0);
   }
+});
+
+test("anatomy inspection removes every glow and signal layer while retaining the anatomical brain", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await expect(page.locator("canvas[data-anatomy-ready=true]")).toBeVisible({
+    timeout: 30000,
+  });
+  const hologram = await pixelCounts(page.locator(".brain-viewport"));
+  await page
+    .getByRole("button", { name: "Anatomy · effects off", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Anatomy · effects off" }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect
+    .poll(
+      async () => (await pixelCounts(page.locator(".brain-viewport"))).blue,
+      { timeout: 10000 },
+    )
+    .toBeLessThan(hologram.blue * 0.25);
+  await expect(page.locator("canvas")).toBeVisible();
+  await page.getByRole("button", { name: "Rotate brain right" }).click();
+  await page
+    .getByRole("button", { name: "Anatomy · effects off", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Anatomy · effects off" }),
+  ).toHaveAttribute("aria-pressed", "false");
 });

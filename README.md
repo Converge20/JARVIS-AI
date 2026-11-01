@@ -1,28 +1,38 @@
-# AXIOM — Neural Intelligence Interface
+# AXIOM — Anatomical Neural Intelligence Interface
 
-**A living interface for your ideas, tasks, and next big move.**
+A personal assistant prototype in **Converge20/JARVIS-AI**, built with React, TypeScript, Vite, Three.js, and React Three Fiber. AXIOM is a provisional name, configurable in `src/config/brand.ts`.
 
-AXIOM is the provisional identity for the personal assistant in **JARVIS-AI**. Phase 2 replaces the circular core with an interactive, original 3D human brain while retaining the React/TypeScript dashboard, local task manager, session conversation, and activity log. No API keys, accounts, backend, paid services, or microphone are required.
+![AXIOM anatomical dashboard](docs/axiom-desktop.jpg)
 
-![AXIOM desktop dashboard](docs/axiom-desktop.jpg)
+[Effects-off anatomy](docs/axiom-anatomy.jpg) · [Neutral side view](docs/axiom-anatomy-side.jpg) · [Brain detail](docs/axiom-brain.jpg) · [Mobile](docs/axiom-mobile.jpg) · [Visual validation](docs/ANATOMY-VALIDATION.md)
 
-[Brain detail](docs/axiom-brain.jpg) · [Mobile layout](docs/axiom-mobile.jpg) · [Static fallback](docs/axiom-fallback.jpg)
+## Anatomical correction
 
-## What works
+The former parametric oval has been removed. The brain now uses licensed anatomical meshes:
 
-- **Interactive anatomy:** drag to rotate a large, translucent blue brain, or use the keyboard-accessible rotation and reset buttons. Original folded cortical hemispheres, a medial fissure, cerebellum, stem, raised winding gyri, hundreds of luminous nodes, and blue/orange signal paths.
-- **Six neural states:** Idle, Listening, Analyzing, Task processing, Knowledge retrieval, and Responding, each with a distinct visual pattern. Manual previews and five scenario buttons are available directly below the brain.
-- **Reactive interface:** chat requests activate a relevant processing pattern, then a response pulse; task changes activate selected clusters; the voice demo drives blue neural pulses with a generated audio amplitude envelope.
-- **Tasks:** add, edit, prioritize, complete, reopen, delete, and filter objectives. Browser local storage preserves tasks across reloads. Existing `jarvis.tasks.v1` data is retained, including task titles you already saved.
-- **Conversation:** session history, typing indicator, suggested prompts, and scripted responses using actual pending tasks. Finance and analysis examples are scripted. Every assistant message is labeled as a demo.
-- **Dashboard:** five navigation views, live local clock/date, actual task counts, storage status, and session activity. No fabricated computer-performance or cognition measurements.
-- **Accessibility and resilience:** reduced-motion support, session animation preference, Eco mode, static anatomy without WebGL, and automatic fallback if the graphics context is lost. Task and conversation controls keep working.
+- **Cortex:** MRI-derived bilateral pial surface from OpenNeuro ds006128, sub-01, snapshot 1.0.11 (**CC0 1.0**), via a pinned anatomical atlas. Full detail preserves all **150,256 native cortical triangles** and genuine hemispheric variation.
+- **Cerebellum and stem:** separate BodyParts3D (**CC BY 4.0**) cerebellum, midbrain, pons, and medulla meshes, aligned with the cortex by a recorded uniform transformation.
+- **Honest scope:** this is a multi-source anatomical composite, not a single-subject reconstruction or clinical model. The lower structures are less detailed than the MRI cortex. No ellipsoid, synthetic gyri, sphere cerebellum, or tube stem is used.
 
-**All assistant responses and neural patterns are simulations.** These artistic patterns represent application activity; they are not real AI cognition, brain scans, neuroscience findings, or clinical anatomy. No microphone is accessed and no audio is recorded.
+**BodyParts3D, © The Database Center for Life Science licensed under CC Attribution 4.0 International.**
 
-## Preview
+Complete source URLs, authors, licenses, pinned revisions, adaptation notices, and checksum records are retained in [model attribution](public/models/ATTRIBUTION.md), `licenses/anatomy/`, and `public/models/provenance.json`. Those data credits also apply to derived screenshots. No application code from the source anatomy viewers is copied.
 
-Prerequisite: Node.js 22.12+ or Node.js 24 LTS with npm. These commands install project dependencies only; no administrator access or system-wide installation is needed.
+## Working features
+
+- Large, rotatable anatomical brain with blue materials, fold shading, real self-shadows, restrained bloom, luminous nodes, and surface-following blue/orange signal packets.
+- **Anatomy · effects off:** inspect the exact same geometry in opaque gray with neutral lighting. Every node, path, glow, and bloom layer is removed, so the silhouette and folds can be checked directly.
+- Six reactive neural modes and five manual scenario previews. Chat, voice demonstrations, and task changes also activate relevant modes. A late reply cannot override a newer interaction.
+- Full task management: add, edit, prioritize, complete, reopen, delete, and filter. Saved `jarvis.tasks.v1` data remains compatible across refreshes. Existing task titles are preserved.
+- Session chat with user/assistant messages, typing indicators, suggestions, and clearly labeled scripted replies. Actual pending tasks inform the briefing responses.
+- Five navigation views, a live local clock/date, actual task summaries, storage status, and a session activity log.
+- Responsive layouts, keyboard controls, reduced-motion support, a session animation preference, Eco mode, Static fallback, and recovery from WebGL context loss.
+
+All conversation and neural activity is **simulated**. Activity paths follow real cortical mesh edges, but they do not represent measured neural tracts, cognition, or a brain scan of the user's activity. No microphone is accessed and no audio is recorded.
+
+## Run and test
+
+Use Node.js 24 LTS (or Node 22.12+) with npm. No administrator permissions, backend, API keys, accounts, or paid services are needed.
 
 ```bash
 git clone https://github.com/Converge20/JARVIS-AI.git
@@ -32,99 +42,69 @@ npm ci
 npm run dev
 ```
 
-Open **http://localhost:5173**. The script binds to `0.0.0.0` for cloud-workspace previews. Use `npm run dev -- --host 127.0.0.1` to restrict a personal preview to your machine.
+Open **http://localhost:5173**. The dev script binds to `0.0.0.0` for cloud previews. To restrict a personal preview to your machine, run `npm run dev -- --host 127.0.0.1`.
 
 ```bash
-npm run build       # TypeScript validation + production bundle in dist/
+npm run build       # TypeScript + production bundle in dist/
 npm run preview     # Production preview at http://localhost:4173
-npm test            # Service, geometry, state-machine, and React tests
-npm run test:e2e    # Chromium browser workflows, including actual WebGL rendering
+npm test            # Asset, geometry, routing, service, state, and React tests
+npm run test:e2e    # Chromium workflows and real WebGL validation
 ```
 
-For browser tests, install the development browser with `npx playwright install chromium`, or set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/path/to/chromium` if it is already installed. Test-only software-rendering flags make shaders testable on CI without a physical GPU. These flags are not used by the application. CI runs on an ephemeral Ubuntu runner; it installs nothing on your Mac.
+Install the development browser with `npx playwright install chromium`, or set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/path/to/chromium` to an installed binary. CI uses test-only software WebGL flags on an ephemeral runner, not on your Mac. The application itself does not require those flags or any system-wide installation.
 
-## Try every neural state
+## Try every visual state
 
-Select a state under **Neural states**. Each non-idle manual preview lasts eight seconds, then returns to Idle; selecting a new state replaces the previous preview.
+Use the six buttons beneath the brain. Non-idle manual previews last eight seconds, then return to Idle. The five scenario buttons preview patterns only; they do not execute commands.
 
-| State               | Visual behavior                                                    | Also triggered by                            |
-| ------------------- | ------------------------------------------------------------------ | -------------------------------------------- |
-| Idle                | Soft blue pulses, sparse signal packets, gentle orientation drift  | Preview expiry or the Idle button            |
-| Listening           | Bright blue nodes follow a synthetic amplitude envelope            | Activate voice; stops after eight seconds    |
-| Analyzing           | Orange packets and sequential spatial cluster activation           | An analysis or comparison chat prompt        |
-| Task processing     | Concentrated orange activity around a selected cluster             | Task changes, briefly; planning/task prompts |
-| Knowledge retrieval | Blue/orange activity across distributed clusters                   | Explanation, finance, and knowledge prompts  |
-| Responding          | Synchronized rhythmic neural lights and a simulated voice waveform | Completion of a scripted chat reply          |
+| State               | Visual behavior / trigger                                                                                                            |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Idle                | Sparse blue pulses and gentle orientation drift.                                                                                     |
+| Listening           | Blue nodes respond to a generated amplitude envelope; Activate voice starts an eight-second demonstration without microphone access. |
+| Analyzing           | Sequential clusters and orange signal packets; analysis/comparison chat prompts trigger this mode.                                   |
+| Task processing     | Focused clusters and orange surface routes; task changes and planning/task prompts trigger this mode.                                |
+| Knowledge retrieval | Distributed blue/orange routing; explanation/finance/general knowledge prompts trigger it.                                           |
+| Responding          | Rhythmic neural illumination and a simulated voice waveform after a scripted chat reply.                                             |
 
-The five **scenario buttons** are visual previews, not command execution:
+Scenario profiles: Plan my schedule → task cluster A; Explain a finance concept → retrieval; Analyze information → sequential analysis; Create a task → a different task cluster D; Answer a general question → responding. Create actual tasks through the Tasks panel. `⌘/Ctrl + K` opens conversation.
 
-- **Plan my schedule:** forward-cluster task pattern.
-- **Explain a finance concept:** distributed retrieval pattern.
-- **Analyze information:** sequential analysis pattern.
-- **Create a task:** a different, posterior task cluster.
-- **Answer a general question:** rhythmic response pattern.
+Select **Anatomy · effects off** to validate the shape independently of lighting effects. Use **Visual quality** for Full detail, Eco, or Static. Preferences → Ambient animations pauses motion; the operating system's reduced-motion preference also stops the animation loop.
 
-Create actual tasks through **My tasks → +**. Chat through **Conversation** or press `⌘/Ctrl + K`. Scripted replies cannot perform external actions. A delayed chat response cannot override a newer manual preview or task/voice action.
+## Rendering and performance
 
-Use **Visual quality** above the brain to select **Full detail**, **Eco**, or **Static**. Under Preferences, turn **Ambient animations** off to pause motion. The operating system's reduced-motion preference also pauses the 3D animation, including signal travel, while keeping the selected state's appearance visible.
+- Full detail: approximately 244,000 triangles across the five anatomical meshes, 640 nodes, and 37 cortical edge routes. Eco uses about 93,000 triangles, 320 nodes, 19 routes, a lower pixel ratio, and no bloom or shadow pass.
+- The renderer is lazy-loaded. Full active states request up to 60 frames/second; Idle and Eco request up to 30. Rendering stops when hidden/offscreen, paused, or under reduced motion. Explicit changes still render a single frame.
+- Actual mesh normals and native cortical curvature support fold shading. A small high-threshold bloom pass uses Three.js's own modules; no new postprocessing framework is added. Full-detail self-shadows provide depth without replacing the anatomical silhouette.
+- Signal routes are precomputed with A* on the triangle-edge graph. Packet positions update in place with arc-length/linear edge interpolation. They cannot take Catmull–Rom shortcuts through sulci or across empty space.
+- Compressed local GLB assets load only for 3D: roughly 4.46 MB Full detail or 1.73 MB Eco, plus their small network file. Modern desktop Chrome supports the native gzip decompression API used by the loader. No external model/texture requests occur at runtime.
+- Static/no-WebGL mode displays a render of the same licensed composite. Loading/render failures and context loss preserve the working dashboard and offer a retry. Intentional Static/Eco/Full changes do not create false failure messages.
+- The lazy Three.js renderer is about 258 KB gzip and produces Vite's standard uncompressed chunk-size advisory. 60 FPS has not been benchmarked on physical macOS hardware; software WebGL, high-DPI displays, and power-saving modes can be slower. Eco/Static are available to reduce load.
 
-## How the brain is built
-
-No model, texture, HDR environment, font, or other asset is downloaded at runtime. The anatomy and pathways are authored procedurally in this repository.
-
-1. `geometry.ts` generates two mirrored, elongated half-surfaces with a medial gap, temporal shaping, domain-warped sulci, and smaller cerebellar/stem geometry. Raised meandering gyri form a single merged tube mesh rather than dozens of individual draw calls.
-2. Three.js and React Three Fiber render physically lit, translucent blue surfaces with a custom Fresnel rim shader. An atmospheric background provides a subtle depth/glow effect without a heavy bloom or volumetric postprocessing stack.
-3. A seeded generator places **960 cortical nodes in Full detail** or **480 in Eco**. Six spatial clusters provide repeatable visual routing; these clusters have no asserted cognitive meaning.
-4. Vertex/fragment shaders compute node brightness and blue/orange colors from the selected mode, synthetic amplitude, cluster, and time. Small packet trails move along precomputed Catmull–Rom curves; their buffers are updated in place without React updates per frame.
-5. The renderer is loaded lazily only when WebGL is available and selected. The fallback projects the same procedural geometry into SVG and uses no WebGL or animation loop.
-
-## Performance and limits
-
-- Full-detail active states request up to 60 frames per second. Idle and Eco request up to 30. Device pixel ratio is capped at 1.5 in Full detail and 1 in Eco.
-- Rendering stops when the tab is hidden, the scene is outside the viewport, motion is disabled, or reduced motion is requested. Explicit state and rotation changes still render a single frame.
-- Eco reduces cortical mesh resolution, nodes, pathways, gyri detail, and antialiasing. Static view avoids GPU rendering completely. A lost context automatically switches to the static view; **Retry 3D** attempts recovery.
-- Shader geometry is allocated once per quality setting, reused between frames, and disposed when replaced/unmounted. No runtime analytics, external assets, shadows, AI API calls, or expensive postprocessing are used.
-- The approximate anatomy is an artistic model, not a segmented human scan. The glow uses surface shading and compositing, not physical volumetric simulation.
-- A smooth 60 FPS is a target, not a measured guarantee. Validation here uses Chromium with a software WebGL renderer, not physical macOS Chrome hardware. Integrated GPUs, high-resolution displays, power-saving modes, and other tabs can reduce performance. Use Eco or Static as needed.
-- Three.js adds an approximately 242 KB gzip lazy-loaded renderer chunk. Vite reports its normal 500 KB uncompressed chunk advisory; the main interface and static fallback remain separate and usable without loading the renderer.
-
-## Architecture and branding
+## Architecture and reproducible data pipeline
 
 ```text
-src/
-  config/brand.ts             Provisional assistant name, monogram, tagline, version, repo URL
-  App.tsx                     Dashboard, navigation, task/chat activity integration
-  components/
-    neural/
-      geometry.ts             Original procedural anatomy, nodes, curves, SVG projection
-      activity.ts             Six mode definitions, scenario profiles, synthetic amplitude
-      BrainScene.tsx          Lazy-loaded Three.js / React Three Fiber renderer and shaders
-      BrainFallback.tsx       Static SVG projection without WebGL
-      NeuralPanel.tsx         Controls, render policy, context/error fallback
-      neural.css              Cinematic layout and neural interface styles
-    Chat.tsx                  Session conversation and composer
-    Tasks.tsx                 Persistent task UI and editor
-    Waveform.tsx              Simulated voice waveform
-  hooks/useNeuralActivity.ts  Timed modes, interruption-safe reply transitions, cleanup
-  hooks/useTasks.ts           Task persistence and storage error handling
-  services/assistant.ts      AssistantProvider boundary and scripted responses
-  services/tasks.ts          Stable versioned task storage and validation
+src/config/brand.ts                    Provisional branding
+src/components/neural/BrainScene.tsx    Licensed mesh rendering, shadows, bloom, and signals
+src/components/neural/anatomy-loader.ts Local compressed GLB + network loading and cache
+src/components/neural/geometry.ts      Mesh-edge arc-length interpolation; no brain generator
+src/components/neural/NeuralPanel.tsx   State controls, anatomy inspection, quality, fallback
+src/components/neural/BrainFallback.tsx Static render of the same anatomy
+src/components/neural/activity.ts      State/scenario definitions and synthetic amplitude
+src/hooks/useNeuralActivity.ts          Timed modes and interruption-safe reply transitions
+public/models/                         Licensed assets, LODs, routes, attribution, provenance
+licenses/anatomy/                      Original source notices, metadata, and license snapshot
+scripts/build-anatomy.py               AXIOM's own checksum-verified offline conversion
+scripts/requirements-anatomy.txt        Development-only data pipeline dependencies
 ```
 
-Change `src/config/brand.ts` to rename the assistant across the interface, message labels, shortcut, browser title, and new onboarding tasks. The static HTML metadata/favicon and documentation can be updated for a final identity. Saved user task titles are never silently renamed. The repository remains `Converge20/JARVIS-AI` and storage keys stay stable.
+Anatomical sources are fetched only during development. `scripts/build-anatomy.py` verifies the two input SHA-256 hashes before extracting geometry, applies the documented registration, retains the native Full-detail cortex, makes a separate Eco decimation, and generates a surface network for **each** LOD. Runtime and normal app development need neither Python nor the original sources. The script expects the pinned GLB inputs at the `work/anatomy/` paths documented in `public/models/provenance.json`; sources and URLs are in the attribution. Original downloads stay ignored under `work/`.
 
-Dependencies are React, React DOM, Lucide icons, Three.js, and React Three Fiber. There is no additional controls, animation, asset-loader, or postprocessing library.
+For optional regeneration in an isolated development environment, install `scripts/requirements-anatomy.txt` there and run `python scripts/build-anatomy.py`. Never install development tools on a user's machine automatically. Dataset code/credits do not relicense unrelated application code.
 
-## Data, security, and next steps
+## Data, security, and future work
 
-- Tasks remain on this browser origin under `jarvis.tasks.v1`. They are not encrypted or synced; avoid storing secrets. Clearing site data deletes them.
-- Conversation, activity, neural previews, visual quality, and animation preferences are session-only.
-- Invalid saved data is preserved until the user explicitly chooses replacement. Blocked/full browser storage produces a visible session-only warning.
-- No microphone, paid APIs, key requests, email/calendar connections, device automation, or telemetry. `.gitignore` excludes secrets, dependencies, builds, and test artifacts. No deployment workflow is included.
-- Future AI providers must call a protected backend. Never put keys in browser code or `VITE_*` variables. `AssistantProvider.reply(prompt, context)` is the integration boundary.
-- Calendar, email, real voice, reminders, weather, optional memory, and approved Mac controls remain future work. Sensitive actions must use scoped permissions and explicit approval.
-- Phase 2 is prepared on its own feature branch for review. Nothing is deployed or automatically merged into `main`.
+Tasks stay in the current browser origin's local storage. They are not encrypted or synced; clearing site data deletes them. Invalid saved data is preserved until the user explicitly replaces it; blocked/full storage produces a visible session-only warning. Conversation, activity, previews, and preferences are session-only.
 
-## Validation
+There are no paid APIs, credentials, microphone requests, recording, telemetry, calendar/email connections, device controls, or deployment workflow. `.gitignore` excludes environment files, dependencies, builds, and test artifacts. The existing `AssistantProvider` boundary remains ready for future server-backed AI; keys must never enter browser code or `VITE_*` variables. Real voice, calendar/email, reminders, weather, optional memory, and approved Mac controls remain future work requiring scoped permissions and explicit approval for sensitive actions.
 
-Vitest covers valid/invalid storage, task lifecycle and persistence, scripted replies, voice/preferences, procedural mesh invariants, deterministic nodes, scenario routing, timed state transitions, and stale-reply protection. Playwright verifies task persistence across real reloads, all navigation, chat/voice, responsive overflow, actual rendered blue and orange WebGL pixels, every neural mode/scenario, context-loss recovery, no-WebGL operation, and paused draw calls under reduced motion.
+Changes remain on a draft review branch. Nothing is automatically merged into `main` or deployed.

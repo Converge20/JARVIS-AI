@@ -45,7 +45,7 @@ export const SCENARIOS: {
     command: "Plan my schedule",
     mode: "task",
     variant: 0,
-    detail: "Planning pattern · alternating forward clusters",
+    detail: "Planning pattern · surface cluster group A",
   },
   {
     command: "Explain a finance concept",
@@ -63,7 +63,7 @@ export const SCENARIOS: {
     command: "Create a task",
     mode: "task",
     variant: 3,
-    detail: "Task pattern · focused posterior cluster routing",
+    detail: "Task pattern · surface cluster group D",
   },
   {
     command: "Answer a general question",
