@@ -1,92 +1,130 @@
-# JARVIS-AI
+# AXIOM — Neural Intelligence Interface
 
-**Personal intelligence. A focused workspace.**
+**A living interface for your ideas, tasks, and next big move.**
 
-JARVIS-AI is an original, futuristic personal assistant prototype built with React, TypeScript, and Vite. The first milestone brings a cinematic command center together with practical, local task management. It requires no API keys, account, backend, or paid services.
+AXIOM is the provisional identity for the personal assistant in **JARVIS-AI**. Phase 2 replaces the circular core with an interactive, original 3D human brain while retaining the React/TypeScript dashboard, local task manager, session conversation, and activity log. No API keys, accounts, backend, paid services, or microphone are required.
 
-![JARVIS command center](docs/dashboard-desktop.jpg)
+![AXIOM desktop dashboard](docs/axiom-desktop.jpg)
 
-[Mobile preview](docs/dashboard-mobile.jpg)
+[Brain detail](docs/axiom-brain.jpg) · [Mobile layout](docs/axiom-mobile.jpg) · [Static fallback](docs/axiom-fallback.jpg)
 
-## Current capabilities
+## What works
 
-- **Command center:** animated holographic core, rotating rings, subtle particles, responsive glass-like panels, live local clock, and task summaries.
-- **Tasks:** add, edit, complete, reopen, delete, and prioritize objectives. Filter all, pending, or completed tasks. Tasks persist after refresh using browser local storage. First launch includes editable onboarding tasks.
-- **Conversation:** session history, user and assistant messages, typing indicator, and suggested prompts. Scripted responses can summarize your actual pending tasks, report the current date/time, and explain the prototype.
-- **Voice demonstration:** microphone button, animated waveform, and a listening simulation that stops automatically after eight seconds. **No microphone is accessed and no audio is recorded.**
-- **System overview:** actual workspace state, storage availability, and an activity log of interface events. No fabricated CPU, memory, network, or other computer measurements.
-- **Usability:** keyboard-accessible controls and dialogs, reduced-motion support, a session animation toggle, and `⌘/Ctrl + K` to open conversation.
+- **Interactive anatomy:** drag to rotate a large, translucent blue brain, or use the keyboard-accessible rotation and reset buttons. Original folded cortical hemispheres, a medial fissure, cerebellum, stem, raised winding gyri, hundreds of luminous nodes, and blue/orange signal paths.
+- **Six neural states:** Idle, Listening, Analyzing, Task processing, Knowledge retrieval, and Responding, each with a distinct visual pattern. Manual previews and five scenario buttons are available directly below the brain.
+- **Reactive interface:** chat requests activate a relevant processing pattern, then a response pulse; task changes activate selected clusters; the voice demo drives blue neural pulses with a generated audio amplitude envelope.
+- **Tasks:** add, edit, prioritize, complete, reopen, delete, and filter objectives. Browser local storage preserves tasks across reloads. Existing `jarvis.tasks.v1` data is retained, including task titles you already saved.
+- **Conversation:** session history, typing indicator, suggested prompts, and scripted responses using actual pending tasks. Finance and analysis examples are scripted. Every assistant message is labeled as a demo.
+- **Dashboard:** five navigation views, live local clock/date, actual task counts, storage status, and session activity. No fabricated computer-performance or cognition measurements.
+- **Accessibility and resilience:** reduced-motion support, session animation preference, Eco mode, static anatomy without WebGL, and automatic fallback if the graphics context is lost. Task and conversation controls keep working.
 
-**All assistant replies are scripted demonstrations, not real AI.** The interface labels this throughout. Calendar, email, real voice, Mac controls, weather, and personal memory are planned, disconnected capabilities.
+**All assistant responses and neural patterns are simulations.** These artistic patterns represent application activity; they are not real AI cognition, brain scans, neuroscience findings, or clinical anatomy. No microphone is accessed and no audio is recorded.
 
-## Run locally
+## Preview
 
-Prerequisite: Node.js 22.12+ or Node.js 24 LTS, with npm. These commands install project dependencies only; they do not require administrator privileges or system-wide software installation.
+Prerequisite: Node.js 22.12+ or Node.js 24 LTS with npm. These commands install project dependencies only; no administrator access or system-wide installation is needed.
 
 ```bash
 git clone https://github.com/Converge20/JARVIS-AI.git
 cd JARVIS-AI
-# Before merge, check out the prototype branch:
-git checkout feat/jarvis-command-center
+git checkout feat/axiom-neural-interface
 npm ci
 npm run dev
 ```
 
-Open **http://localhost:5173**. The Vite script binds to `0.0.0.0` for cloud-workspace previews; to restrict a personal preview to your machine, use `npm run dev -- --host 127.0.0.1`.
+Open **http://localhost:5173**. The script binds to `0.0.0.0` for cloud-workspace previews. Use `npm run dev -- --host 127.0.0.1` to restrict a personal preview to your machine.
 
 ```bash
-npm run build       # TypeScript checking + production bundle in dist/
-npm run preview     # Preview that production bundle at http://localhost:4173
-npm test            # Automated service and React interaction tests
-npm run test:e2e    # Chromium browser workflows
+npm run build       # TypeScript validation + production bundle in dist/
+npm run preview     # Production preview at http://localhost:4173
+npm test            # Service, geometry, state-machine, and React tests
+npm run test:e2e    # Chromium browser workflows, including actual WebGL rendering
 ```
 
-For the browser tests, install Playwright's Chromium into your development environment with `npx playwright install chromium`. Where a Chromium binary is already installed, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/path/to/chromium` instead. This is only a development/test dependency and is never required by app users. CI installs browser dependencies on an ephemeral Ubuntu runner.
+For browser tests, install the development browser with `npx playwright install chromium`, or set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/path/to/chromium` if it is already installed. Test-only software-rendering flags make shaders testable on CI without a physical GPU. These flags are not used by the application. CI runs on an ephemeral Ubuntu runner; it installs nothing on your Mac.
 
-## Architecture
+## Try every neural state
+
+Select a state under **Neural states**. Each non-idle manual preview lasts eight seconds, then returns to Idle; selecting a new state replaces the previous preview.
+
+| State               | Visual behavior                                                    | Also triggered by                            |
+| ------------------- | ------------------------------------------------------------------ | -------------------------------------------- |
+| Idle                | Soft blue pulses, sparse signal packets, gentle orientation drift  | Preview expiry or the Idle button            |
+| Listening           | Bright blue nodes follow a synthetic amplitude envelope            | Activate voice; stops after eight seconds    |
+| Analyzing           | Orange packets and sequential spatial cluster activation           | An analysis or comparison chat prompt        |
+| Task processing     | Concentrated orange activity around a selected cluster             | Task changes, briefly; planning/task prompts |
+| Knowledge retrieval | Blue/orange activity across distributed clusters                   | Explanation, finance, and knowledge prompts  |
+| Responding          | Synchronized rhythmic neural lights and a simulated voice waveform | Completion of a scripted chat reply          |
+
+The five **scenario buttons** are visual previews, not command execution:
+
+- **Plan my schedule:** forward-cluster task pattern.
+- **Explain a finance concept:** distributed retrieval pattern.
+- **Analyze information:** sequential analysis pattern.
+- **Create a task:** a different, posterior task cluster.
+- **Answer a general question:** rhythmic response pattern.
+
+Create actual tasks through **My tasks → +**. Chat through **Conversation** or press `⌘/Ctrl + K`. Scripted replies cannot perform external actions. A delayed chat response cannot override a newer manual preview or task/voice action.
+
+Use **Visual quality** above the brain to select **Full detail**, **Eco**, or **Static**. Under Preferences, turn **Ambient animations** off to pause motion. The operating system's reduced-motion preference also pauses the 3D animation, including signal travel, while keeping the selected state's appearance visible.
+
+## How the brain is built
+
+No model, texture, HDR environment, font, or other asset is downloaded at runtime. The anatomy and pathways are authored procedurally in this repository.
+
+1. `geometry.ts` generates two mirrored, elongated half-surfaces with a medial gap, temporal shaping, domain-warped sulci, and smaller cerebellar/stem geometry. Raised meandering gyri form a single merged tube mesh rather than dozens of individual draw calls.
+2. Three.js and React Three Fiber render physically lit, translucent blue surfaces with a custom Fresnel rim shader. An atmospheric background provides a subtle depth/glow effect without a heavy bloom or volumetric postprocessing stack.
+3. A seeded generator places **960 cortical nodes in Full detail** or **480 in Eco**. Six spatial clusters provide repeatable visual routing; these clusters have no asserted cognitive meaning.
+4. Vertex/fragment shaders compute node brightness and blue/orange colors from the selected mode, synthetic amplitude, cluster, and time. Small packet trails move along precomputed Catmull–Rom curves; their buffers are updated in place without React updates per frame.
+5. The renderer is loaded lazily only when WebGL is available and selected. The fallback projects the same procedural geometry into SVG and uses no WebGL or animation loop.
+
+## Performance and limits
+
+- Full-detail active states request up to 60 frames per second. Idle and Eco request up to 30. Device pixel ratio is capped at 1.5 in Full detail and 1 in Eco.
+- Rendering stops when the tab is hidden, the scene is outside the viewport, motion is disabled, or reduced motion is requested. Explicit state and rotation changes still render a single frame.
+- Eco reduces cortical mesh resolution, nodes, pathways, gyri detail, and antialiasing. Static view avoids GPU rendering completely. A lost context automatically switches to the static view; **Retry 3D** attempts recovery.
+- Shader geometry is allocated once per quality setting, reused between frames, and disposed when replaced/unmounted. No runtime analytics, external assets, shadows, AI API calls, or expensive postprocessing are used.
+- The approximate anatomy is an artistic model, not a segmented human scan. The glow uses surface shading and compositing, not physical volumetric simulation.
+- A smooth 60 FPS is a target, not a measured guarantee. Validation here uses Chromium with a software WebGL renderer, not physical macOS Chrome hardware. Integrated GPUs, high-resolution displays, power-saving modes, and other tabs can reduce performance. Use Eco or Static as needed.
+- Three.js adds an approximately 242 KB gzip lazy-loaded renderer chunk. Vite reports its normal 500 KB uncompressed chunk advisory; the main interface and static fallback remain separate and usable without loading the renderer.
+
+## Architecture and branding
 
 ```text
 src/
-  App.tsx                  Navigation, session state, activity, dashboard
+  config/brand.ts             Provisional assistant name, monogram, tagline, version, repo URL
+  App.tsx                     Dashboard, navigation, task/chat activity integration
   components/
-    Core.tsx               CSS-based holographic core and waveform
-    Chat.tsx               Conversation history and composer
-    Tasks.tsx              Task filters, editor and actions
-  hooks/useTasks.ts        Persistence lifecycle and storage error handling
-  services/
-    assistant.ts           AssistantProvider contract and scripted provider
-    tasks.ts               Versioned task storage and validation
-  types.ts                 Shared domain types
-  styles.css               Responsive visual system and reduced-motion rules
-  main.tsx                 React entry point
-public/favicon.svg         Original project mark
-tests/                     Browser workflows and test setup
-.github/workflows/ci.yml   Tests and production build on pull requests
+    neural/
+      geometry.ts             Original procedural anatomy, nodes, curves, SVG projection
+      activity.ts             Six mode definitions, scenario profiles, synthetic amplitude
+      BrainScene.tsx          Lazy-loaded Three.js / React Three Fiber renderer and shaders
+      BrainFallback.tsx       Static SVG projection without WebGL
+      NeuralPanel.tsx         Controls, render policy, context/error fallback
+      neural.css              Cinematic layout and neural interface styles
+    Chat.tsx                  Session conversation and composer
+    Tasks.tsx                 Persistent task UI and editor
+    Waveform.tsx              Simulated voice waveform
+  hooks/useNeuralActivity.ts  Timed modes, interruption-safe reply transitions, cleanup
+  hooks/useTasks.ts           Task persistence and storage error handling
+  services/assistant.ts      AssistantProvider boundary and scripted responses
+  services/tasks.ts          Stable versioned task storage and validation
 ```
 
-Runtime dependencies are React, React DOM, and Lucide icons. Animations use CSS; there is no animation library, external font, analytics script, or remote asset dependency.
+Change `src/config/brand.ts` to rename the assistant across the interface, message labels, shortcut, browser title, and new onboarding tasks. The static HTML metadata/favicon and documentation can be updated for a final identity. Saved user task titles are never silently renamed. The repository remains `Converge20/JARVIS-AI` and storage keys stay stable.
 
-`AssistantProvider.reply(prompt, context)` is the boundary for future conversation providers. A real AI integration must call a protected backend that owns credentials, authentication, rate limits, and context policies. Do not place credentials in frontend code or `VITE_*` variables: those values are public in a browser bundle. Future tool integrations should use separate, scoped adapters and explicit user approval for sensitive actions.
+Dependencies are React, React DOM, Lucide icons, Three.js, and React Three Fiber. There is no additional controls, animation, asset-loader, or postprocessing library.
 
-## Data and security
+## Data, security, and next steps
 
-- Task data is stored under `jarvis.tasks.v1` on the current browser origin. It is not encrypted and is not synced. Avoid storing secrets or highly sensitive data. Clearing browser site data deletes saved tasks.
-- Conversation and activity are held in memory and reset on reload. Preferences apply to the current session.
-- Invalid saved data is preserved; the interface warns you and requires an explicit choice before replacing it. If storage is blocked or full, changes remain usable in the session and a visible warning explains that they are not persisted.
-- There are no AI API calls, microphone permissions, paid integrations, device automation, or telemetry. The application works without an external connection once its assets have loaded.
-- `.gitignore` excludes environment files, dependencies, generated builds, and browser test artifacts. No credentials are needed for this milestone.
-- There is no deployment workflow. Changes are intended for review on a feature branch before any merge into `main`.
-
-## Roadmap
-
-1. Server-backed AI conversations with the professional, calm, concise assistant persona.
-2. Permission-based real-time voice interaction.
-3. Calendar, email, reminders, weather, and productivity adapters.
-4. Approved Mac application actions with explicit confirmation and narrow permissions.
-5. User preferences and optional, user-controlled memory.
-
-Future integrations must document their data handling and permissions before activation. This project uses original dialogue and visuals; it does not reproduce movie dialogue or an actor's voice.
+- Tasks remain on this browser origin under `jarvis.tasks.v1`. They are not encrypted or synced; avoid storing secrets. Clearing site data deletes them.
+- Conversation, activity, neural previews, visual quality, and animation preferences are session-only.
+- Invalid saved data is preserved until the user explicitly chooses replacement. Blocked/full browser storage produces a visible session-only warning.
+- No microphone, paid APIs, key requests, email/calendar connections, device automation, or telemetry. `.gitignore` excludes secrets, dependencies, builds, and test artifacts. No deployment workflow is included.
+- Future AI providers must call a protected backend. Never put keys in browser code or `VITE_*` variables. `AssistantProvider.reply(prompt, context)` is the integration boundary.
+- Calendar, email, real voice, reminders, weather, optional memory, and approved Mac controls remain future work. Sensitive actions must use scoped permissions and explicit approval.
+- Phase 2 is prepared on its own feature branch for review. Nothing is deployed or automatically merged into `main`.
 
 ## Validation
 
-Vitest and React Testing Library cover storage validation, scripted responses, task creation/editing/completion/deletion/persistence, chat history, voice simulation, and animation preferences. Playwright covers actual browser reload persistence, navigation, responsive overflow checks, and preservation of damaged saved data. The pull request records the exact results for this milestone.
+Vitest covers valid/invalid storage, task lifecycle and persistence, scripted replies, voice/preferences, procedural mesh invariants, deterministic nodes, scenario routing, timed state transitions, and stale-reply protection. Playwright verifies task persistence across real reloads, all navigation, chat/voice, responsive overflow, actual rendered blue and orange WebGL pixels, every neural mode/scenario, context-loss recovery, no-WebGL operation, and paused draw calls under reduced motion.

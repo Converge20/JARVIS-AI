@@ -46,7 +46,7 @@ test("chat, voice, navigation and responsive layouts work without external reque
   await expect(page.getByText("Listening simulation active…")).toBeVisible();
   await page.getByRole("button", { name: "Stop demonstration" }).click();
   await page
-    .getByRole("textbox", { name: "Message JARVIS" })
+    .getByRole("textbox", { name: "Message AXIOM" })
     .fill("Plan my day");
   await page.getByRole("button", { name: "Send message" }).click();
   await expect(page.getByText(/You have 3 pending tasks/)).toBeVisible();

@@ -1,3 +1,4 @@
+import { BRAND } from "../config/brand";
 import { useEffect, useRef, useState } from "react";
 import { ArrowUp, CornerDownLeft, MessageSquare, Sparkles } from "lucide-react";
 import type { Message } from "../types";
@@ -16,7 +17,13 @@ export function Chat({
   const end = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (messages.length > 1)
-      end.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      end.current?.scrollIntoView({
+        behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)")
+          .matches
+          ? "instant"
+          : "smooth",
+        block: "nearest",
+      });
   }, [messages, thinking]);
   return (
     <section
@@ -46,7 +53,7 @@ export function Chat({
             </div>
             <div className="message-body">
               <div className="message-meta">
-                <b>{m.role === "assistant" ? "JARVIS" : "YOU"}</b>
+                <b>{m.role === "assistant" ? BRAND.name : "YOU"}</b>
                 <time>{m.time}</time>
                 {m.role === "assistant" && <span>DEMO</span>}
               </div>
@@ -59,7 +66,7 @@ export function Chat({
             <i />
             <i />
             <i />
-            <span>JARVIS is composing a simulated reply</span>
+            <span>{BRAND.name} is composing a simulated reply</span>
           </div>
         )}
         <div ref={end} />
@@ -84,9 +91,9 @@ export function Chat({
           }}
         >
           <input
-            aria-label="Message JARVIS"
+            aria-label={`Message ${BRAND.name}`}
             maxLength={2000}
-            placeholder="Ask JARVIS anything…"
+            placeholder={`Ask ${BRAND.name} anything…`}
             value={input}
             onChange={(e) => setInput(e.target.value)}
           />

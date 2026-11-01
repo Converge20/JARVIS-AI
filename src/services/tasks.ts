@@ -1,3 +1,4 @@
+import { BRAND } from "../config/brand";
 import type { Task } from "../types";
 export const TASK_KEY = "jarvis.tasks.v1";
 export const initialTasks: Task[] = [
@@ -15,7 +16,7 @@ export const initialTasks: Task[] = [
   },
   {
     id: "welcome-3",
-    title: "Try a conversation with JARVIS",
+    title: `Try a conversation with ${BRAND.name}`,
     priority: "low",
     completed: false,
   },

@@ -28,7 +28,11 @@ import {
   Wifi,
   X,
 } from "lucide-react";
-import { Core, Waveform } from "./components/Core";
+import { Waveform } from "./components/Waveform";
+import { NeuralPanel } from "./components/neural/NeuralPanel";
+import { NEURAL_MODES, classifyActivity } from "./components/neural/activity";
+import { useNeuralActivity } from "./hooks/useNeuralActivity";
+import { BRAND } from "./config/brand";
 import { Tasks } from "./components/Tasks";
 import { Chat } from "./components/Chat";
 import { useTasks } from "./hooks/useTasks";
@@ -46,7 +50,8 @@ const nav = [
 export default function App() {
   const [page, setPage] = useState("Overview");
   const [now, setNow] = useState(new Date());
-  const [listening, setListening] = useState(false);
+  const neural = useNeuralActivity();
+  const listening = neural.mode === "listening";
   const [thinking, setThinking] = useState(false);
   const [motion, setMotion] = useState(true);
   const [settings, setSettings] = useState(false);
@@ -69,6 +74,7 @@ export default function App() {
   const busy = useRef(false);
   const alive = useRef(true);
   useEffect(() => {
+    document.title = `${BRAND.name} — ${BRAND.tagline.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())}`;
     alive.current = true;
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => {
@@ -76,11 +82,6 @@ export default function App() {
       clearInterval(timer);
     };
   }, []);
-  useEffect(() => {
-    if (!listening) return;
-    const timer = setTimeout(() => setListening(false), 8000);
-    return () => clearTimeout(timer);
-  }, [listening]);
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") {
@@ -94,7 +95,9 @@ export default function App() {
         setTimeout(
           () =>
             document
-              .querySelector<HTMLInputElement>('[aria-label="Message JARVIS"]')
+              .querySelector<HTMLInputElement>(
+                `[aria-label="Message ${BRAND.name}"]`,
+              )
               ?.focus(),
           0,
         );
@@ -111,11 +114,13 @@ export default function App() {
   function changeTasks(next: Task[], event: string) {
     setTasks(next);
     log(event);
+    neural.activate("task", 3500, 3);
   }
   async function send(text: string) {
     if (busy.current) return;
     busy.current = true;
     setThinking(true);
+    const neuralToken = neural.activate(classifyActivity(text));
     setMessages((m) => [
       ...m,
       { id: crypto.randomUUID(), role: "user", content: text, time: stamp() },
@@ -133,9 +138,11 @@ export default function App() {
           },
         ]);
         log("Simulated response generated");
+        neural.respond(neuralToken);
       }
     } catch {
-      if (alive.current)
+      if (alive.current) {
+        neural.respond(neuralToken);
         setMessages((m) => [
           ...m,
           {
@@ -146,6 +153,7 @@ export default function App() {
             time: stamp(),
           },
         ]);
+      }
     } finally {
       busy.current = false;
       if (alive.current) setThinking(false);
@@ -157,7 +165,7 @@ export default function App() {
     ? Math.round((complete / tasks.length) * 100)
     : 0;
   function voice() {
-    setListening((v) => !v);
+    neural.activate(listening ? "idle" : "listening", listening ? 0 : 8000);
     log(
       listening ? "Voice demonstration stopped" : "Voice demonstration started",
     );
@@ -172,13 +180,14 @@ export default function App() {
             e.preventDefault();
             setPage("Overview");
           }}
-          aria-label="JARVIS home"
+          aria-label={`${BRAND.name} home`}
         >
           <div className="brand-mark">
-            <span>J</span>
+            <span>{BRAND.monogram}</span>
           </div>
           <div>
-            JARVIS<span>PERSONAL INTELLIGENCE</span>
+            {BRAND.name}
+            <span>{BRAND.tagline}</span>
           </div>
         </a>
         <div className="workspace-tag">
@@ -226,7 +235,7 @@ export default function App() {
           <div className="profile">
             <div className="profile-avatar">U</div>
             <div>
-              Personal workspace<small>Prototype v0.1.0</small>
+              Personal workspace<small>Prototype v{BRAND.version}</small>
             </div>
             <span className="status-dot" />
           </div>
@@ -285,12 +294,12 @@ export default function App() {
           <div className="page-heading">
             <div>
               <div className="eyebrow">
-                <span className="tiny-dash" />
-                YOUR PERSONAL INTELLIGENCE SYSTEM
+                <span className="tiny-dash" />A NEW FRONTIER OF PERSONAL
+                INTELLIGENCE
               </div>
               <h1>
                 {page === "Overview"
-                  ? "A clearer mind. A sharper day."
+                  ? "Intelligence. Reimagined."
                   : page === "Conversation"
                     ? "A little clarity, on command."
                     : page === "Tasks"
@@ -301,7 +310,7 @@ export default function App() {
               </h1>
               <p>
                 {page === "Overview"
-                  ? "Everything you need. One intelligent workspace."
+                  ? "A living interface for your ideas, tasks, and next big move."
                   : page === "Conversation"
                     ? "Explore a conversation with your personal assistant."
                     : page === "Tasks"
@@ -313,7 +322,7 @@ export default function App() {
             </div>
             <div className="online-badge">
               <span className="status-dot" />
-              SYSTEM ONLINE<span>v0.1</span>
+              SYSTEM ONLINE<span>v0.2</span>
             </div>
           </div>
           {error && (
@@ -333,9 +342,10 @@ export default function App() {
                 <div>
                   <small>Assistant status</small>
                   <strong>
-                    Standing by <span className="status-dot" />
+                    {NEURAL_MODES[neural.mode].label}{" "}
+                    <span className="status-dot" />
                   </strong>
-                  <span>Ready when you are</span>
+                  <span>Visual simulation active</span>
                 </div>
                 <span className="stat-code">01</span>
               </div>
@@ -407,26 +417,19 @@ export default function App() {
           {page === "Overview" && (
             <>
               <div className="overview-grid">
-                <section className="panel intelligence-panel">
-                  <div className="panel-heading">
-                    <div className="heading-inline">
-                      <span className="status-dot" />
-                      <h2>Intelligence core</h2>
-                    </div>
-                    <span className="mono muted">J.A.R.V.I.S. / V.01</span>
-                  </div>
-                  <Core listening={listening} thinking={thinking} />
-                  <div className="core-bottom">
-                    <div>
-                      <span className="eyebrow">PERSONAL ASSISTANT</span>
-                      <p>Consider it handled.</p>
-                    </div>
-                    <div className="core-ready">
-                      <i />
-                      ALL SYSTEMS READY
-                    </div>
-                  </div>
-                </section>
+                <NeuralPanel
+                  mode={neural.mode}
+                  variant={neural.variant}
+                  motion={motion}
+                  onMode={(mode) => {
+                    neural.activate(mode, mode === "idle" ? 0 : 8000);
+                    log(`Neural state preview: ${NEURAL_MODES[mode].label}`);
+                  }}
+                  onScenario={(scenario) => {
+                    neural.activate(scenario.mode, 8000, scenario.variant);
+                    log(`Neural scenario preview: ${scenario.command}`);
+                  }}
+                />
                 <div className="right-stack">
                   <section
                     className={`panel voice-panel ${listening ? "listening" : ""}`}
@@ -438,11 +441,15 @@ export default function App() {
                       </div>
                       <span className="demo-tag">DEMO</span>
                     </div>
-                    <Waveform active={listening} />
+                    <Waveform
+                      active={listening || neural.mode === "responding"}
+                    />
                     <p>
                       {listening
                         ? "Listening simulation active…"
-                        : "Your voice. Your command."}
+                        : neural.mode === "responding"
+                          ? "Simulated response waveform"
+                          : "Your voice. Your command."}
                     </p>
                     <small>
                       {listening
@@ -469,6 +476,29 @@ export default function App() {
                     </div>
                   </section>
                   <Tasks tasks={tasks} onChange={changeTasks} />
+                  <section
+                    className="panel neural-legend"
+                    aria-label="Visualization guide"
+                  >
+                    <div className="eyebrow">A LANGUAGE OF LIGHT</div>
+                    <h2>Activity, made visible.</h2>
+                    <div>
+                      <i className="legend-blue" />
+                      <span>Blue pathways</span>
+                      <small>Ambient & listening</small>
+                    </div>
+                    <div>
+                      <i className="legend-orange" />
+                      <span>Orange signals</span>
+                      <small>Selected activity</small>
+                    </div>
+                    <div>
+                      <i className="legend-white" />
+                      <span>Luminous nodes</span>
+                      <small>Simulated activation</small>
+                    </div>
+                    <p>Generated locally. No live AI connected.</p>
+                  </section>
                 </div>
               </div>
               <div className="bottom-grid">
@@ -616,8 +646,8 @@ export default function App() {
           )}
           <footer>
             <span>
-              <span className="footer-logo">J</span>JARVIS <i /> Designed for a
-              more focused you.
+              <span className="footer-logo">{BRAND.monogram}</span>
+              {BRAND.name} <i /> Designed for a more focused you.
             </span>
             <span>
               <span className="status-dot" />
@@ -674,7 +704,10 @@ export default function App() {
             </div>
             {settings ? (
               <>
-                <p>Adjust this session’s visual experience.</p>
+                <p>
+                  Adjust this session’s visual experience. The brain also
+                  respects this setting.
+                </p>
                 <button
                   className="preference-row"
                   aria-pressed={motion}
@@ -684,15 +717,16 @@ export default function App() {
                   animations<span>{motion ? "On" : "Paused"}</span>
                 </button>
                 <small className="muted">
-                  Your device’s reduced-motion preference is also respected.
+                  Your device’s reduced-motion preference is also respected. Eco
+                  and Static views are available above the brain.
                 </small>
               </>
             ) : (
               <>
                 <p>
-                  JARVIS is a local-first personal assistant prototype. Create
-                  and prioritize tasks, try scripted conversations, and explore
-                  the simulated voice interface.
+                  {BRAND.name} is a local-first personal assistant prototype.
+                  Create and prioritize tasks, try scripted conversations, and
+                  explore the simulated voice interface.
                 </p>
                 <p>
                   Tasks persist in this browser. Conversations and activity last
@@ -704,7 +738,7 @@ export default function App() {
                 </div>
                 <a
                   className="text-button"
-                  href="https://github.com/Converge20/JARVIS-AI"
+                  href={BRAND.repositoryUrl}
                   target="_blank"
                   rel="noreferrer"
                 >

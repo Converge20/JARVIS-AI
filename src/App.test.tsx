@@ -45,7 +45,7 @@ it("shows labeled scripted chat and navigates without losing the conversation", 
   const user = userEvent.setup();
   render(<App />);
   await user.type(
-    screen.getByRole("textbox", { name: "Message JARVIS" }),
+    screen.getByRole("textbox", { name: "Message AXIOM" }),
     "What can you do?",
   );
   await user.click(screen.getByRole("button", { name: "Send message" }));
