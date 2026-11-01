@@ -169,8 +169,7 @@ export function Chat({
         </form>
         <div className="chat-disclaimer">
           <span className="status-dot" />
-          Session history · AI requests send messages and task context to
-          OpenAI.
+          Session history · AI requests send messages and task context to Groq.
           <span>{connection.message}</span>
           <button
             type="button"

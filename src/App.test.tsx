@@ -9,15 +9,13 @@ beforeEach(() => {
   vi.spyOn(window, "confirm").mockReturnValue(true);
   vi.stubGlobal(
     "fetch",
-    vi
-      .fn()
-      .mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          status: "configuration_required",
-          message: "Configuration required: set OPENAI_API_KEY on the server.",
-        }),
+    vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        status: "configuration_required",
+        message: "Configuration required: set GROQ_API_KEY on the server.",
       }),
+    }),
   );
 });
 afterEach(() => vi.restoreAllMocks());

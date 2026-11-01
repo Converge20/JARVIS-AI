@@ -6,7 +6,7 @@ export default defineConfig({
   use: { baseURL: "http://127.0.0.1:5173", trace: "retain-on-failure" },
   webServer: {
     command: "npm run dev -- --port 5173 --strictPort",
-    env: { OPENAI_ENABLED: "false", OPENAI_API_KEY: "", API_PORT: "3002" },
+    env: { GROQ_ENABLED: "false", GROQ_API_KEY: "", API_PORT: "3002" },
     url: "http://127.0.0.1:5173",
     // Never reuse a developer server that might have paid AI enabled.
     reuseExistingServer: false,

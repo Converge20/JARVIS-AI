@@ -63,6 +63,6 @@ export const CONNECTION_LABELS: Record<Connection["status"], string> = {
   configuration_required: "Configuration required",
   disabled: "AI disabled",
   ready: "Configured · not verified",
-  connected: "OpenAI connected",
+  connected: "Groq connected",
   unavailable: "AI unavailable",
 };

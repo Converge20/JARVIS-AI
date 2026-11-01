@@ -1,6 +1,6 @@
 # AXIOM — Personal Intelligence Interface
 
-A personal assistant with opt-in, server-backed OpenAI text intelligence in **Converge20/JARVIS-AI**, built with React, TypeScript, Vite, Three.js, and React Three Fiber. AXIOM is a provisional name, configurable in `src/config/brand.ts`.
+A personal assistant with opt-in, server-backed Groq text intelligence in **Converge20/JARVIS-AI**, built with React, TypeScript, Vite, Three.js, and React Three Fiber. AXIOM is a provisional name, configurable in `src/config/brand.ts`.
 
 ![AXIOM Phase 3 dashboard — AI configuration required](docs/axiom-phase3-desktop.jpg)
 
@@ -22,9 +22,9 @@ Complete source URLs, authors, licenses, pinned revisions, adaptation notices, a
 
 - Large, rotatable anatomical brain with blue materials, fold shading, real self-shadows, restrained bloom, luminous nodes, and surface-following blue/orange signal packets.
 - **Anatomy · effects off:** inspect the exact same geometry in opaque gray with neutral lighting. Every node, path, glow, and bloom layer is removed, so the silhouette and folds can be checked directly.
-- Six neural visual previews and five manual scenarios, preserved alongside real activity: Analyzing while awaiting OpenAI, task activity after applying changes, and a short acknowledgement after an actual local task retrieval tool returns. A late reply cannot override a newer preview.
+- Six neural visual previews and five manual scenarios, preserved alongside real activity: Analyzing while awaiting Groq, task activity after applying changes, and a short acknowledgement after an actual local task retrieval tool returns. A late reply cannot override a newer preview.
 - Full task management: add, edit, prioritize, complete, reopen, delete, and filter. Saved `jarvis.tasks.v1` data remains compatible across refreshes. Existing task titles are preserved.
-- Real OpenAI text responses with recent multi-turn context, connection/configuration/error feedback, and no scripted fallback. Natural-language task tools retrieve the list or propose a dated task, completion, edit or deletion. Every AI mutation requires an explicit confirmation; stale proposals are rejected.
+- Real Groq text responses with recent multi-turn context, connection/configuration/error feedback, and no scripted fallback. Natural-language task tools retrieve the list or propose a dated task, completion, edit or deletion. Every AI mutation requires an explicit confirmation; stale proposals are rejected.
 - Five navigation views, a live local clock/date, actual task summaries, storage status, and a session activity log.
 - Responsive layouts, keyboard controls, reduced-motion support, a session animation preference, Eco mode, Static fallback, and recovery from WebGL context loss.
 
@@ -32,7 +32,7 @@ Neural graphics are an **illustration of application activity**, never a measure
 
 ## Run and test
 
-Use Node.js 24 LTS (or Node 22.12+) with npm. The dashboard and local task manager work without keys. Real AI requires your own OpenAI project key and approved API usage. No administrator permissions are required.
+Use Node.js 24 LTS (or Node 22.12+) with npm. The dashboard and local task manager work without keys. Real AI requires your GroqCloud free-tier project key and approved API usage. No administrator permissions are required.
 
 ```bash
 git clone https://github.com/Converge20/JARVIS-AI.git
@@ -43,7 +43,7 @@ cp .env.example .env  # optional: defaults keep AI disabled
 npm run dev
 ```
 
-Open **http://localhost:5173** on the development machine. `npm run dev` starts Vite and a loopback-only Node backend on port 3001; Vite forwards `/api` to it. In Codespaces, use its authenticated **Private** forwarded port 5173 instead of your Mac’s localhost. Do not expose port 3001 separately. See [Phase 3 setup and safeguards](docs/PHASE-3.md).
+Open **http://localhost:5173** on the development machine. `npm run dev` starts Vite and a loopback-only Node backend on port 3001; Vite forwards `/api` to it. In Codespaces, use its authenticated **Private** forwarded port 5173 instead of your Mac’s localhost. Do not expose port 3001 separately. See [Phase 3B setup and safeguards](docs/PHASE-3B-GROQ.md).
 
 ```bash
 npm run build       # TypeScript + production bundle in dist/
@@ -107,9 +107,9 @@ For optional regeneration in an isolated development environment, install `scrip
 
 Tasks stay in the current browser origin's local storage. They are not encrypted or synced; clearing site data deletes them. Invalid saved data is preserved until the user explicitly replaces it; blocked/full storage produces a visible session-only warning. Conversation, activity, previews, and preferences are session-only.
 
-The backend uses the official OpenAI JavaScript SDK and Responses API (`gpt-4.1-mini` by default). It stays disabled unless `OPENAI_API_KEY` is configured server-side **and** `OPENAI_ENABLED=true` is explicitly set. Never use a `VITE_*` credential variable. `.env.example` contains placeholders only; `.gitignore` excludes real environment files. No real API calls are made by tests.
+The backend uses Groq’s OpenAI-compatible Responses API through the existing SDK (`openai/gpt-oss-20b` by default, configurable with `GROQ_MODEL`). All provider requests go to `https://api.groq.com/openai/v1`; there is no OpenAI fallback. It stays disabled unless server-side `GROQ_API_KEY` is configured **and** `GROQ_ENABLED=true` is explicitly set. Never use a `VITE_*` credential variable. `.env.example` contains placeholders only; `.gitignore` excludes real environment files. No real API calls are made by tests.
 
-Voice transport/event interfaces, original British voice direction, and session-only future voice selection are prepared, but speech APIs, microphone access, transcription and audio output are **not implemented or enabled**. No calendar/email connections, telemetry, device controls or deployment workflow is added. Full setup, usage safeguards, data flow and limitations: [Phase 3](docs/PHASE-3.md).
+Voice transport/event interfaces, original British voice direction, and session-only future voice selection are prepared, but speech APIs, microphone access, transcription and audio output are **not implemented or enabled**. No calendar/email connections, telemetry, device controls or deployment workflow is added. Current setup, usage safeguards, data flow and limitations: [Phase 3B — Groq](docs/PHASE-3B-GROQ.md).
 
 Changes remain on a draft review branch. Nothing is automatically merged into `main` or deployed.
 

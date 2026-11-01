@@ -96,7 +96,7 @@ export default function App() {
       role: "assistant",
       time: stamp(),
       content:
-        "Your workspace is ready. Text intelligence requires a configured server and your approval to enable OpenAI usage. Tasks remain available locally. Voice is disabled for this phase.",
+        "Your workspace is ready. Connect Groq to ask questions and manage tasks in conversation. Tasks are also available locally. Voice remains disabled.",
     },
   ]);
   const [activity, setActivity] = useState<Activity[]>([
@@ -179,10 +179,10 @@ export default function App() {
         setProposals(reply.proposals);
         setConnection({
           status: "connected",
-          message: "Last OpenAI request succeeded. Voice remains disabled.",
+          message: "Last Groq request succeeded. Voice remains disabled.",
           model: reply.model,
         });
-        log("OpenAI text response received");
+        log("Groq text response received");
         // Retrieval animation acknowledges a completed real tool call, not inferred cognition.
         const retrieved = reply.events.includes("retrieval");
         if (retrieved) log("Local task retrieval completed");
@@ -598,7 +598,7 @@ export default function App() {
                     </span>
                     <b>
                       {connection.status === "connected"
-                        ? "OpenAI text"
+                        ? "Groq text"
                         : "Not verified"}
                     </b>
                   </div>
@@ -657,7 +657,7 @@ export default function App() {
                 {
                   icon: Sparkles,
                   name: "AI conversations",
-                  text: "Server-backed OpenAI text conversations and confirmed task commands. Configure and enable the server to connect.",
+                  text: "Server-backed Groq text conversations and confirmed task commands. Configure and enable the server to connect.",
                 },
                 {
                   icon: Mic,
@@ -811,13 +811,13 @@ export default function App() {
               <>
                 <p>
                   {BRAND.name} is a local-first personal assistant prototype.
-                  Create and prioritise tasks, and use OpenAI text conversations
+                  Create and prioritise tasks, and use Groq text conversations
                   once your server is configured and explicitly enabled.
                 </p>
                 <p>
                   Tasks persist in this browser. Conversations and activity last
                   for this session. AI requests send recent messages and task
-                  context to OpenAI with API storage disabled. No microphone,
+                  context to Groq under its API data policies. No microphone,
                   voice API, email, calendar or Mac controls are enabled.
                 </p>
                 <div className="shortcut">

@@ -1,5 +1,7 @@
 # Phase 3 — OpenAI text intelligence, task tools and future British voice
 
+> Historical Phase 3 design and validation. **Phase 3B supersedes the OpenAI setup below.** The active provider is now Groq; `OPENAI_*` settings are ignored. Follow [current Groq configuration and Codespaces instructions](PHASE-3B-GROQ.md).
+
 Implemented on `feat/axiom-neural-interface`. No public deployment, merge, purchase, real API test call or microphone request is part of this change.
 
 ## Start without paid requests
