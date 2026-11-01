@@ -112,3 +112,5 @@ The backend uses the official OpenAI JavaScript SDK and Responses API (`gpt-4.1-
 Voice transport/event interfaces, original British voice direction, and session-only future voice selection are prepared, but speech APIs, microphone access, transcription and audio output are **not implemented or enabled**. No calendar/email connections, telemetry, device controls or deployment workflow is added. Full setup, usage safeguards, data flow and limitations: [Phase 3](docs/PHASE-3.md).
 
 Changes remain on a draft review branch. Nothing is automatically merged into `main` or deployed.
+
+Dependency security review and audit evidence: [dependency audit](docs/security/DEPENDENCY-AUDIT.md).
