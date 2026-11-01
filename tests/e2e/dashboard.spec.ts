@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 test("task lifecycle persists after a real browser refresh", async ({
   page,
 }) => {
+  page.on("dialog", (dialog) => dialog.accept());
   await page.goto("/");
   await page.getByRole("button", { name: "Add task", exact: true }).click();
   await page.getByLabel("Task name").fill("Review prototype");
@@ -41,15 +42,27 @@ test("chat, voice, navigation and responsive layouts work without external reque
       },
     });
   });
+  await page.route("**/api/chat", (route) =>
+    route.fulfill({
+      json: {
+        content: "Mock provider: You have 3 pending tasks.",
+        proposals: [],
+        events: ["retrieval"],
+        model: "mock",
+      },
+    }),
+  );
   await page.goto("/");
-  await page.getByRole("button", { name: "Activate voice" }).click();
-  await expect(page.getByText("Listening simulation active…")).toBeVisible();
-  await page.getByRole("button", { name: "Stop demonstration" }).click();
+  await expect(
+    page.getByRole("button", { name: "Voice not enabled" }),
+  ).toBeDisabled();
   await page
     .getByRole("textbox", { name: "Message AXIOM" })
     .fill("Plan my day");
   await page.getByRole("button", { name: "Send message" }).click();
-  await expect(page.getByText(/You have 3 pending tasks/)).toBeVisible();
+  await expect(
+    page.getByText(/Mock provider: You have 3 pending tasks/),
+  ).toBeVisible();
   for (const name of [
     "Conversation",
     "Tasks",
@@ -61,7 +74,9 @@ test("chat, voice, navigation and responsive layouts work without external reque
       .getByRole("navigation")
       .getByRole("button", { name: new RegExp(name) })
       .click();
-  await expect(page.getByText(/You have 3 pending tasks/)).toBeVisible();
+  await expect(
+    page.getByText(/Mock provider: You have 3 pending tasks/),
+  ).toBeVisible();
   for (const width of [1440, 1024, 768, 390]) {
     await page.setViewportSize({ width, height: 1000 });
     expect(

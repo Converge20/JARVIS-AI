@@ -1,8 +1,8 @@
-# AXIOM — Anatomical Neural Intelligence Interface
+# AXIOM — Personal Intelligence Interface
 
-A personal assistant prototype in **Converge20/JARVIS-AI**, built with React, TypeScript, Vite, Three.js, and React Three Fiber. AXIOM is a provisional name, configurable in `src/config/brand.ts`.
+A personal assistant with opt-in, server-backed OpenAI text intelligence in **Converge20/JARVIS-AI**, built with React, TypeScript, Vite, Three.js, and React Three Fiber. AXIOM is a provisional name, configurable in `src/config/brand.ts`.
 
-![AXIOM anatomical dashboard](docs/axiom-desktop.jpg)
+![AXIOM Phase 3 dashboard — AI configuration required](docs/axiom-phase3-desktop.jpg)
 
 [Effects-off anatomy](docs/axiom-anatomy.jpg) · [Neutral side view](docs/axiom-anatomy-side.jpg) · [Brain detail](docs/axiom-brain.jpg) · [Mobile](docs/axiom-mobile.jpg) · [Visual validation](docs/ANATOMY-VALIDATION.md)
 
@@ -22,31 +22,33 @@ Complete source URLs, authors, licenses, pinned revisions, adaptation notices, a
 
 - Large, rotatable anatomical brain with blue materials, fold shading, real self-shadows, restrained bloom, luminous nodes, and surface-following blue/orange signal packets.
 - **Anatomy · effects off:** inspect the exact same geometry in opaque gray with neutral lighting. Every node, path, glow, and bloom layer is removed, so the silhouette and folds can be checked directly.
-- Six reactive neural modes and five manual scenario previews. Chat, voice demonstrations, and task changes also activate relevant modes. A late reply cannot override a newer interaction.
+- Six neural visual previews and five manual scenarios, preserved alongside real activity: Analyzing while awaiting OpenAI, task activity after applying changes, and a short acknowledgement after an actual local task retrieval tool returns. A late reply cannot override a newer preview.
 - Full task management: add, edit, prioritize, complete, reopen, delete, and filter. Saved `jarvis.tasks.v1` data remains compatible across refreshes. Existing task titles are preserved.
-- Session chat with user/assistant messages, typing indicators, suggestions, and clearly labeled scripted replies. Actual pending tasks inform the briefing responses.
+- Real OpenAI text responses with recent multi-turn context, connection/configuration/error feedback, and no scripted fallback. Natural-language task tools retrieve the list or propose a dated task, completion, edit or deletion. Every AI mutation requires an explicit confirmation; stale proposals are rejected.
 - Five navigation views, a live local clock/date, actual task summaries, storage status, and a session activity log.
 - Responsive layouts, keyboard controls, reduced-motion support, a session animation preference, Eco mode, Static fallback, and recovery from WebGL context loss.
 
-All conversation and neural activity is **simulated**. Activity paths follow real cortical mesh edges, but they do not represent measured neural tracts, cognition, or a brain scan of the user's activity. No microphone is accessed and no audio is recorded.
+Neural graphics are an **illustration of application activity**, never a measurement of cognition or real neural tracts. Manual state/scenario controls are explicitly visual demonstrations. Real AI text requires server configuration and explicit opt-in. No microphone is accessed and no audio is recorded or generated.
 
 ## Run and test
 
-Use Node.js 24 LTS (or Node 22.12+) with npm. No administrator permissions, backend, API keys, accounts, or paid services are needed.
+Use Node.js 24 LTS (or Node 22.12+) with npm. The dashboard and local task manager work without keys. Real AI requires your own OpenAI project key and approved API usage. No administrator permissions are required.
 
 ```bash
 git clone https://github.com/Converge20/JARVIS-AI.git
 cd JARVIS-AI
 git checkout feat/axiom-neural-interface
 npm ci
+cp .env.example .env  # optional: defaults keep AI disabled
 npm run dev
 ```
 
-Open **http://localhost:5173**. The dev script binds to `0.0.0.0` for cloud previews. To restrict a personal preview to your machine, run `npm run dev -- --host 127.0.0.1`.
+Open **http://localhost:5173** on the development machine. `npm run dev` starts Vite and a loopback-only Node backend on port 3001; Vite forwards `/api` to it. In Codespaces, use its authenticated **Private** forwarded port 5173 instead of your Mac’s localhost. Do not expose port 3001 separately. See [Phase 3 setup and safeguards](docs/PHASE-3.md).
 
 ```bash
 npm run build       # TypeScript + production bundle in dist/
-npm run preview     # Production preview at http://localhost:4173
+npm start           # Serves dist/ AND /api on http://127.0.0.1:3001
+npm run preview     # Frontend-only Vite preview; no AI backend proxy
 npm test            # Asset, geometry, routing, service, state, and React tests
 npm run test:e2e    # Chromium workflows and real WebGL validation
 ```
@@ -57,16 +59,16 @@ Install the development browser with `npx playwright install chromium`, or set `
 
 Use the six buttons beneath the brain. Non-idle manual previews last eight seconds, then return to Idle. The five scenario buttons preview patterns only; they do not execute commands.
 
-| State               | Visual behavior / trigger                                                                                                            |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Idle                | Sparse blue pulses and gentle orientation drift.                                                                                     |
-| Listening           | Blue nodes respond to a generated amplitude envelope; Activate voice starts an eight-second demonstration without microphone access. |
-| Analyzing           | Sequential clusters and orange signal packets; analysis/comparison chat prompts trigger this mode.                                   |
-| Task processing     | Focused clusters and orange surface routes; task changes and planning/task prompts trigger this mode.                                |
-| Knowledge retrieval | Distributed blue/orange routing; explanation/finance/general knowledge prompts trigger it.                                           |
-| Responding          | Rhythmic neural illumination and a simulated voice waveform after a scripted chat reply.                                             |
+| State               | Visual behavior / trigger                                                                                     |
+| ------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Idle                | Sparse blue pulses and gentle orientation drift.                                                              |
+| Listening           | Manual visual preview only. Real listening is disabled until microphone/voice integration is approved.        |
+| Analyzing           | Orange processing pattern during an actual AI request; also available as a manual visual preview.             |
+| Task processing     | Focused clusters on real task changes, including confirmed AI proposals; manual preview also available.       |
+| Knowledge retrieval | Acknowledgement after a real local task-list tool returns; manual preview also available. No web-search tool. |
+| Responding          | Manual visual preview only. Text responses return to Idle; real audio synchronisation is planned.             |
 
-Scenario profiles: Plan my schedule → task cluster A; Explain a finance concept → retrieval; Analyze information → sequential analysis; Create a task → a different task cluster D; Answer a general question → responding. Create actual tasks through the Tasks panel. `⌘/Ctrl + K` opens conversation.
+Scenario profiles: Plan my schedule → task cluster A; Explain a finance concept → retrieval; Analyze information → sequential analysis; Create a task → a different task cluster D; Answer a general question → responding. Create actual tasks through the Tasks panel or a confirmed AI task proposal. `⌘/Ctrl + K` opens conversation.
 
 Select **Anatomy · effects off** to validate the shape independently of lighting effects. Use **Visual quality** for Full detail, Eco, or Static. Preferences → Ambient animations pauses motion; the operating system's reduced-motion preference also stops the animation loop.
 
@@ -105,6 +107,8 @@ For optional regeneration in an isolated development environment, install `scrip
 
 Tasks stay in the current browser origin's local storage. They are not encrypted or synced; clearing site data deletes them. Invalid saved data is preserved until the user explicitly replaces it; blocked/full storage produces a visible session-only warning. Conversation, activity, previews, and preferences are session-only.
 
-There are no paid APIs, credentials, microphone requests, recording, telemetry, calendar/email connections, device controls, or deployment workflow. `.gitignore` excludes environment files, dependencies, builds, and test artifacts. The existing `AssistantProvider` boundary remains ready for future server-backed AI; keys must never enter browser code or `VITE_*` variables. Real voice, calendar/email, reminders, weather, optional memory, and approved Mac controls remain future work requiring scoped permissions and explicit approval for sensitive actions.
+The backend uses the official OpenAI JavaScript SDK and Responses API (`gpt-4.1-mini` by default). It stays disabled unless `OPENAI_API_KEY` is configured server-side **and** `OPENAI_ENABLED=true` is explicitly set. Never use a `VITE_*` credential variable. `.env.example` contains placeholders only; `.gitignore` excludes real environment files. No real API calls are made by tests.
+
+Voice transport/event interfaces, original British voice direction, and session-only future voice selection are prepared, but speech APIs, microphone access, transcription and audio output are **not implemented or enabled**. No calendar/email connections, telemetry, device controls or deployment workflow is added. Full setup, usage safeguards, data flow and limitations: [Phase 3](docs/PHASE-3.md).
 
 Changes remain on a draft review branch. Nothing is automatically merged into `main` or deployed.

@@ -1777,3 +1777,13 @@ footer .status-dot {
     font-size: 10px;
   }
 }
+/* Phase 3: connection feedback and explicit task review. */
+.chat-error { padding: 12px; border: 1px solid #b86b3c; border-radius: 8px; color: #ffd4ad; font-size: 12px; overflow-wrap: anywhere; }
+.task-proposal { padding: 14px; margin: 12px 0; border: 1px solid #22728b; border-radius: 10px; background: #0c1a29; font-size: 12px; }
+.task-proposal p { margin: 8px 0; overflow-wrap: anywhere; line-height: 1.6; }
+.task-proposal button { margin: 8px 18px 0 0; }
+.chat-disclaimer { flex-wrap: wrap; overflow-wrap: anywhere; }
+.voice-setting { display: grid; gap: 8px; margin: 20px 0; font-size: 13px; }
+.voice-setting select { background: #101c2a; color: #cce4f2; border: 1px solid #284354; border-radius: 6px; padding: 10px; }
+.demo-tag { white-space: normal; }
+.voice-button:disabled { opacity: .5; cursor: default; }

@@ -30,14 +30,21 @@ import {
 } from "lucide-react";
 import { Waveform } from "./components/Waveform";
 import { NeuralPanel } from "./components/neural/NeuralPanel";
-import { NEURAL_MODES, classifyActivity } from "./components/neural/activity";
+import { NEURAL_MODES } from "./components/neural/activity";
 import { useNeuralActivity } from "./hooks/useNeuralActivity";
 import { BRAND } from "./config/brand";
 import { Tasks } from "./components/Tasks";
 import { Chat } from "./components/Chat";
 import { useTasks } from "./hooks/useTasks";
-import { assistant } from "./services/assistant";
-import type { Activity, Message, Task } from "./types";
+import { assistant, CONNECTION_LABELS } from "./services/assistant";
+import type { Connection } from "./services/assistant";
+import { applyTaskProposal } from "./services/taskActions";
+import {
+  BRITISH_VOICE,
+  VOICE_PRESETS,
+  voiceAvailability,
+} from "./services/voice";
+import type { Activity, Message, Task, TaskProposal } from "./types";
 const stamp = () =>
   new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 const nav = [
@@ -51,8 +58,32 @@ export default function App() {
   const [page, setPage] = useState("Overview");
   const [now, setNow] = useState(new Date());
   const neural = useNeuralActivity();
-  const listening = neural.mode === "listening";
   const [thinking, setThinking] = useState(false);
+  const [connection, setConnection] = useState<Connection>({
+    status: "unavailable",
+    message: "Checking assistant server…",
+  });
+  const [chatError, setChatError] = useState("");
+  const [proposals, setProposals] = useState<TaskProposal[]>([]);
+  const [voicePreset, setVoicePreset] = useState(BRITISH_VOICE.voice);
+  async function checkConnection() {
+    try {
+      const next = await assistant.status();
+      if (alive.current) setConnection(next);
+    } catch (error) {
+      if (alive.current)
+        setConnection({
+          status: "unavailable",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Assistant server unavailable.",
+        });
+    }
+  }
+  useEffect(() => {
+    void checkConnection();
+  }, []);
   const [motion, setMotion] = useState(true);
   const [settings, setSettings] = useState(false);
   const [help, setHelp] = useState(false);
@@ -61,10 +92,11 @@ export default function App() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
+      local: true,
       role: "assistant",
       time: stamp(),
       content:
-        "Welcome back. Your workspace is ready, and I’m standing by. What would you like to focus on today?",
+        "Your workspace is ready. Text intelligence requires a configured server and your approval to enable OpenAI usage. Tasks remain available locally. Voice is disabled for this phase.",
     },
   ]);
   const [activity, setActivity] = useState<Activity[]>([
@@ -117,59 +149,103 @@ export default function App() {
     neural.activate("task", 3500, 3);
   }
   async function send(text: string) {
-    if (busy.current) return;
+    if (busy.current || proposals.length || !text.trim()) return;
     busy.current = true;
     setThinking(true);
-    const neuralToken = neural.activate(classifyActivity(text));
-    setMessages((m) => [
-      ...m,
-      { id: crypto.randomUUID(), role: "user", content: text, time: stamp() },
-    ]);
+    setChatError("");
+    const token = neural.activate("analyzing");
+    const history: Message[] = [
+      ...messages,
+      {
+        id: crypto.randomUUID(),
+        role: "user",
+        content: text.trim(),
+        time: stamp(),
+      },
+    ];
+    setMessages(history);
     try {
-      const content = await assistant.reply(text, { tasks });
+      const reply = await assistant.reply(history, tasks);
       if (alive.current) {
         setMessages((m) => [
           ...m,
           {
             id: crypto.randomUUID(),
             role: "assistant",
-            content,
+            content: reply.content,
             time: stamp(),
           },
         ]);
-        log("Simulated response generated");
-        neural.respond(neuralToken);
+        setProposals(reply.proposals);
+        setConnection({
+          status: "connected",
+          message: "Last OpenAI request succeeded. Voice remains disabled.",
+          model: reply.model,
+        });
+        log("OpenAI text response received");
+        // Retrieval animation acknowledges a completed real tool call, not inferred cognition.
+        const retrieved = reply.events.includes("retrieval");
+        if (retrieved) log("Local task retrieval completed");
+        neural.finish(
+          token,
+          retrieved ? "retrieval" : "idle",
+          retrieved ? 1800 : 0,
+        );
       }
-    } catch {
+    } catch (error) {
       if (alive.current) {
-        neural.respond(neuralToken);
-        setMessages((m) => [
-          ...m,
-          {
-            id: crypto.randomUUID(),
-            role: "assistant",
-            content:
-              "The demo response could not be generated. Please try again.",
-            time: stamp(),
-          },
-        ]);
+        const message =
+          error instanceof Error ? error.message : "Assistant request failed.";
+        setChatError(message);
+        setConnection((c) => ({ ...c, status: "unavailable", message }));
+        log("AI request failed; no task changes applied");
+        neural.finish(token);
       }
     } finally {
       busy.current = false;
       if (alive.current) setThinking(false);
     }
   }
+  function decide(proposal: TaskProposal, confirmed: boolean) {
+    if (!proposals.some((p) => p.id === proposal.id)) return;
+    let content = "Task proposal cancelled. No change was saved.";
+    if (confirmed) {
+      try {
+        const next = applyTaskProposal(tasks, proposal);
+        changeTasks(next, "Confirmed task operation applied");
+        content = `Application result: ${proposal.kind.replace("_", " ")} applied to “${proposal.task?.title ?? proposal.before?.title}”. ${error ? "Storage is unavailable; this change is session-only." : "Applied to the local task list."}`;
+      } catch (error) {
+        content =
+          error instanceof Error ? error.message : "Task change failed.";
+        setChatError(content);
+      }
+    }
+    setMessages((m) => [
+      ...m,
+      { id: crypto.randomUUID(), role: "assistant", content, time: stamp() },
+    ]);
+    setProposals((p) => p.filter((item) => item.id !== proposal.id));
+  }
+  const chatProps = {
+    onClear: () => {
+      setMessages([]);
+      setChatError("");
+      log("Conversation cleared");
+    },
+    messages,
+    thinking,
+    onSend: send,
+    connection,
+    onCheck: checkConnection,
+    error: chatError,
+    proposals,
+    onDecision: decide,
+  };
   const complete = tasks.filter((t) => t.completed).length;
   const pending = tasks.length - complete;
   const percent = tasks.length
     ? Math.round((complete / tasks.length) * 100)
     : 0;
-  function voice() {
-    neural.activate(listening ? "idle" : "listening", listening ? 0 : 8000);
-    log(
-      listening ? "Voice demonstration stopped" : "Voice demonstration started",
-    );
-  }
   return (
     <div className={`app ${motion ? "" : "motion-paused"}`}>
       <aside className="sidebar">
@@ -214,9 +290,9 @@ export default function App() {
             <ShieldCheck size={20} />
             <b>Your space. Your control.</b>
             <p>
-              Local-first. No external services.
+              Tasks stay local. AI is opt-in.
               <br />
-              Built around your privacy.
+              You control API usage.
             </p>
             <span>
               <i />
@@ -249,7 +325,7 @@ export default function App() {
           </div>
           <div className="topbar-right">
             <span className="local-label">
-              <Wifi size={14} /> Local mode
+              <Wifi size={14} /> {CONNECTION_LABELS[connection.status]}
             </span>
             <span className="header-date">
               {now.toLocaleDateString(undefined, {
@@ -322,7 +398,7 @@ export default function App() {
             </div>
             <div className="online-badge">
               <span className="status-dot" />
-              SYSTEM ONLINE<span>v0.2</span>
+              WORKSPACE READY<span>v0.3</span>
             </div>
           </div>
           {error && (
@@ -345,7 +421,7 @@ export default function App() {
                     {NEURAL_MODES[neural.mode].label}{" "}
                     <span className="status-dot" />
                   </strong>
-                  <span>Visual simulation active</span>
+                  <span>Activity visualisation · not cognition</span>
                 </div>
                 <span className="stat-code">01</span>
               </div>
@@ -431,44 +507,20 @@ export default function App() {
                   }}
                 />
                 <div className="right-stack">
-                  <section
-                    className={`panel voice-panel ${listening ? "listening" : ""}`}
-                  >
+                  <section className="panel voice-panel">
                     <div className="panel-heading">
                       <div className="heading-inline">
                         <AudioLines size={17} />
                         <h2>Voice interface</h2>
                       </div>
-                      <span className="demo-tag">DEMO</span>
+                      <span className="demo-tag">DISABLED</span>
                     </div>
-                    <Waveform
-                      active={listening || neural.mode === "responding"}
-                    />
-                    <p>
-                      {listening
-                        ? "Listening simulation active…"
-                        : neural.mode === "responding"
-                          ? "Simulated response waveform"
-                          : "Your voice. Your command."}
-                    </p>
-                    <small>
-                      {listening
-                        ? "Visual demo · stops after 8 seconds"
-                        : "A preview of hands-free assistance"}
-                    </small>
-                    <button
-                      className={`voice-button ${listening ? "active" : ""}`}
-                      onClick={voice}
-                    >
+                    <Waveform active={false} />
+                    <p>British voice · next phase</p>
+                    <small>{voiceAvailability.message}</small>
+                    <button className="voice-button" disabled>
                       <Mic size={16} />
-                      {listening ? "Stop demonstration" : "Activate voice"}
-                      <span aria-hidden="true">
-                        {listening ? (
-                          <span className="status-dot" />
-                        ) : (
-                          <ArrowUpRight size={13} />
-                        )}
-                      </span>
+                      Voice not enabled
                     </button>
                     <div className="voice-foot">
                       <LockKeyhole size={11} />
@@ -497,12 +549,15 @@ export default function App() {
                       <span>Luminous nodes</span>
                       <small>Simulated activation</small>
                     </div>
-                    <p>Generated locally. No live AI connected.</p>
+                    <p>
+                      Animations illustrate app activity, never measured
+                      cognition. Manual controls are visual previews.
+                    </p>
                   </section>
                 </div>
               </div>
               <div className="bottom-grid">
-                <Chat messages={messages} thinking={thinking} onSend={send} />
+                <Chat {...chatProps} />
                 <section className="panel system-panel">
                   <div className="panel-heading">
                     <div className="heading-inline">
@@ -516,7 +571,9 @@ export default function App() {
                       <Radio size={15} />
                       Assistant engine
                     </span>
-                    <b className="cyan-text">Demo mode</b>
+                    <b className="cyan-text">
+                      {CONNECTION_LABELS[connection.status]}
+                    </b>
                   </div>
                   <div className="system-row">
                     <span>
@@ -539,7 +596,11 @@ export default function App() {
                       <Blocks size={15} />
                       External services
                     </span>
-                    <b>Not connected</b>
+                    <b>
+                      {connection.status === "connected"
+                        ? "OpenAI text"
+                        : "Not verified"}
+                    </b>
                   </div>
                   <div className="activity-preview">
                     <div className="eyebrow">
@@ -563,14 +624,7 @@ export default function App() {
               </div>
             </>
           )}
-          {page === "Conversation" && (
-            <Chat
-              messages={messages}
-              thinking={thinking}
-              onSend={send}
-              expanded
-            />
-          )}
+          {page === "Conversation" && <Chat {...chatProps} expanded />}
           {page === "Tasks" && (
             <div className="wide-panel">
               <Tasks tasks={tasks} onChange={changeTasks} expanded />
@@ -603,7 +657,7 @@ export default function App() {
                 {
                   icon: Sparkles,
                   name: "AI conversations",
-                  text: "Context-aware assistance, powered by a future server-side AI provider.",
+                  text: "Server-backed OpenAI text conversations and confirmed task commands. Configure and enable the server to connect.",
                 },
                 {
                   icon: Mic,
@@ -633,12 +687,18 @@ export default function App() {
               ].map(({ icon: Icon, name, text }) => (
                 <section className="panel integration" key={name}>
                   <Icon size={25} />
-                  <span className="demo-tag">PLANNED</span>
+                  <span className="demo-tag">
+                    {name === "AI conversations"
+                      ? CONNECTION_LABELS[connection.status]
+                      : "PLANNED"}
+                  </span>
                   <h2>{name}</h2>
                   <p>{text}</p>
                   <span className="muted">
                     <LockKeyhole size={12} />
-                    Not connected · Future milestone
+                    {name === "AI conversations"
+                      ? "Available with server configuration"
+                      : "Not connected · Future milestone"}
                   </span>
                 </section>
               ))}
@@ -651,7 +711,7 @@ export default function App() {
             </span>
             <span>
               <span className="status-dot" />
-              LOCAL-FIRST PROTOTYPE <i /> NO API KEYS REQUIRED
+              LOCAL TASKS <i /> OPT-IN SERVER AI
             </span>
           </footer>
         </div>
@@ -673,7 +733,9 @@ export default function App() {
             onKeyDown={(e) => {
               if (e.key === "Tab") {
                 const nodes =
-                  e.currentTarget.querySelectorAll<HTMLElement>("button,a");
+                  e.currentTarget.querySelectorAll<HTMLElement>(
+                    "button,a,select",
+                  );
                 const first = nodes[0],
                   last = nodes[nodes.length - 1];
                 if (e.shiftKey && document.activeElement === first) {
@@ -716,6 +778,30 @@ export default function App() {
                   {motion ? <Pause size={16} /> : <Play size={16} />}Ambient
                   animations<span>{motion ? "On" : "Paused"}</span>
                 </button>
+                <label className="voice-setting">
+                  Future synthetic voice
+                  <select
+                    aria-label="Future synthetic voice"
+                    value={voicePreset}
+                    onChange={(e) =>
+                      setVoicePreset(e.target.value as typeof voicePreset)
+                    }
+                  >
+                    {VOICE_PRESETS.map((voice) => (
+                      <option key={voice} value={voice}>
+                        {voice}
+                        {voice === "onyx"
+                          ? " · preferred British direction"
+                          : ""}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <p className="muted">
+                  Original synthetic voice planned. Accent and tone require
+                  listening validation in the next phase. Selection is
+                  session-only; microphone and speech APIs remain disabled.
+                </p>
                 <small className="muted">
                   Your device’s reduced-motion preference is also respected. Eco
                   and Static views are available above the brain.
@@ -725,13 +811,14 @@ export default function App() {
               <>
                 <p>
                   {BRAND.name} is a local-first personal assistant prototype.
-                  Create and prioritize tasks, try scripted conversations, and
-                  explore the simulated voice interface.
+                  Create and prioritise tasks, and use OpenAI text conversations
+                  once your server is configured and explicitly enabled.
                 </p>
                 <p>
                   Tasks persist in this browser. Conversations and activity last
-                  for this session. No microphone, AI API, email, calendar, or
-                  Mac controls are connected.
+                  for this session. AI requests send recent messages and task
+                  context to OpenAI with API storage disabled. No microphone,
+                  voice API, email, calendar or Mac controls are enabled.
                 </p>
                 <div className="shortcut">
                   <kbd>⌘ / Ctrl + K</kbd> Open conversation

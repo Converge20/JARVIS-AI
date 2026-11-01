@@ -100,8 +100,9 @@ test("uses the same anatomy without WebGL and keeps tasks and conversation usabl
   ).toBeVisible();
   await expect(page.locator(".brain-fallback")).toBeVisible();
   await expect(page.locator("canvas")).toHaveCount(0);
-  await page.getByRole("button", { name: "Activate voice" }).click();
-  await expect(page.getByText("Listening simulation active…")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Voice not enabled" }),
+  ).toBeDisabled();
   await page.getByRole("button", { name: "Add task", exact: true }).click();
   await page.getByLabel("Task name").fill("Fallback task");
   await page.getByRole("button", { name: "Save task" }).click();
@@ -112,7 +113,9 @@ test("uses the same anatomy without WebGL and keeps tasks and conversation usabl
     .getByRole("textbox", { name: "Message AXIOM" })
     .fill("What can you do?");
   await page.getByRole("button", { name: "Send message" }).click();
-  await expect(page.getByText(/My replies are scripted/)).toBeVisible();
+  await expect(page.getByRole("alert")).toContainText(
+    /Configuration required|disabled/,
+  );
 });
 test("recovers gracefully from WebGL context loss", async ({ page }) => {
   await page.goto("/");

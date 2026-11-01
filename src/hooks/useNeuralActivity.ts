@@ -31,5 +31,11 @@ export function useNeuralActivity() {
     [activate],
   );
   useEffect(() => () => clearTimeout(timer.current), []);
-  return { ...activity, activate, respond };
+  const finish = useCallback(
+    (token: number, mode: NeuralMode = "idle", duration = 0) => {
+      if (revision.current === token) activate(mode, duration);
+    },
+    [activate],
+  );
+  return { ...activity, activate, respond, finish };
 }

@@ -18,6 +18,7 @@ export function Tasks({ tasks, onChange, expanded = false }: Props) {
   const [adding, setAdding] = useState(false);
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<Priority>("medium");
+  const [dueDate, setDueDate] = useState("");
   const [showAll, setShowAll] = useState(expanded);
   const visible = tasks.filter(
     (t) =>
@@ -28,15 +29,25 @@ export function Tasks({ tasks, onChange, expanded = false }: Props) {
     setEditing(task ?? null);
     setTitle(task?.title ?? "");
     setPriority(task?.priority ?? "medium");
+    setDueDate(task?.dueDate ?? "");
     setAdding(true);
   }
   function save(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) return;
+    if (editing && !window.confirm(`Save changes to “${editing.title}”?`))
+      return;
     onChange(
       editing
         ? tasks.map((t) =>
-            t.id === editing.id ? { ...t, title: title.trim(), priority } : t,
+            t.id === editing.id
+              ? {
+                  ...t,
+                  title: title.trim(),
+                  priority,
+                  dueDate: dueDate || undefined,
+                }
+              : t,
           )
         : [
             ...tasks,
@@ -45,6 +56,7 @@ export function Tasks({ tasks, onChange, expanded = false }: Props) {
               title: title.trim(),
               priority,
               completed: false,
+              ...(dueDate ? { dueDate } : {}),
             },
           ],
       editing ? "Task updated" : "New task created",
@@ -107,7 +119,7 @@ export function Tasks({ tasks, onChange, expanded = false }: Props) {
               <span>{t.title}</span>
               <small className={`priority ${t.priority}`}>
                 <i />
-                {t.priority} priority
+                {t.priority} priority {t.dueDate && ` · Due ${t.dueDate}`}
               </small>
             </div>
             <div className="task-actions">
@@ -117,6 +129,9 @@ export function Tasks({ tasks, onChange, expanded = false }: Props) {
               <button
                 aria-label={`Delete ${t.title}`}
                 onClick={() =>
+                  window.confirm(
+                    `Delete “${t.title}”? This cannot be undone.`,
+                  ) &&
                   onChange(
                     tasks.filter((x) => x.id !== t.id),
                     "Task deleted",
@@ -195,6 +210,14 @@ export function Tasks({ tasks, onChange, expanded = false }: Props) {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="What would you like to accomplish?"
+                />
+              </label>
+              <label>
+                Due date (optional)
+                <input
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
                 />
               </label>
               <label htmlFor={priorityId}>
