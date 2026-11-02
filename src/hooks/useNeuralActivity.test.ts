@@ -47,3 +47,11 @@ it("transitions a current conversation to responding and clears timers on unmoun
   unmount();
   expect(vi.getTimerCount()).toBe(0);
 });
+it("returns a restrained error indication to idle", () => {
+  vi.useFakeTimers();
+  const { result } = renderHook(useNeuralActivity);
+  act(() => result.current.activate("error", 2200));
+  expect(result.current.mode).toBe("error");
+  act(() => vi.advanceTimersByTime(2200));
+  expect(result.current.mode).toBe("idle");
+});

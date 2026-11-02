@@ -7,7 +7,7 @@ import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPa
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import { anatomyResource } from "./anatomy-loader";
 import { preparePath, samplePath } from "./geometry";
-import { MODE_ORDER, simulatedAmplitude } from "./activity";
+import { RENDER_MODE_ORDER, simulatedAmplitude } from "./activity";
 import type { NeuralMode } from "./activity";
 export interface SceneProps {
   mode: NeuralMode;
@@ -24,6 +24,7 @@ float activity(float cluster, float phase) {
   float index = mod(floor(uTime * 1.4) + uVariant, 6.0);
   float focused = 1.0 - step(0.5, abs(cluster - mod(uVariant, 6.0)));
   float sequence = 1.0 - step(0.5, abs(cluster - index));
+  if (uMode > 5.5) return 0.08 + 0.2 * (0.5 + 0.5 * sin(uTime * 2.0));
   if (uMode < 0.5) return 0.08 + pow(max(0.0, sin(uTime * 0.65 + phase)), 12.0) * 0.25;
   if (uMode < 1.5) return 0.35 + uAmplitude * (0.35 + 0.3 * sin(uTime * 4.5 + phase * 0.3));
   if (uMode < 2.5) return 0.12 + sequence * (0.6 + 0.28 * sin(uTime * 8.0 + phase));
@@ -32,6 +33,7 @@ float activity(float cluster, float phase) {
   return 0.3 + 0.65 * (0.5 + 0.5 * sin(uTime * 5.0));
 }
 vec3 signalColor(float cluster) {
+  if (uMode > 5.5) return vec3(0.9,0.4,0.12);
   if (uMode > 1.5 && uMode < 4.5) {
     if (uMode > 3.5 && mod(cluster, 2.0) < 0.5) return vec3(0.08,0.65,1.0);
     return vec3(2.4,0.68,0.1);
@@ -241,7 +243,7 @@ function Anatomy({
     if (animate) time.current += Math.min(delta, 0.08);
     const t = time.current;
     uniforms.uTime.value = t;
-    uniforms.uMode.value = MODE_ORDER.indexOf(mode);
+    uniforms.uMode.value = RENDER_MODE_ORDER.indexOf(mode);
     uniforms.uVariant.value = variant;
     uniforms.uAmplitude.value = simulatedAmplitude(t);
     if (group.current) {
@@ -257,7 +259,7 @@ function Anatomy({
       const material = (object as THREE.Mesh).material;
       if (material instanceof THREE.ShaderMaterial) {
         material.uniforms.uTime.value = t;
-        material.uniforms.uMode.value = MODE_ORDER.indexOf(mode);
+        material.uniforms.uMode.value = RENDER_MODE_ORDER.indexOf(mode);
         material.uniforms.uVariant.value = variant;
         material.uniforms.uAmplitude.value = uniforms.uAmplitude.value;
       }
@@ -269,7 +271,7 @@ function Anatomy({
       for (let tail = 0; tail < 6; tail++) {
         samplePath(
           data.paths[i],
-          (t * (mode === "idle" ? 0.025 : 0.18) +
+          (t * (mode === "idle" || mode === "error" ? 0.025 : 0.18) +
             data.paths[i].phase -
             tail * 0.008 +
             1) %

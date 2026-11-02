@@ -7,7 +7,7 @@ export const NEURAL_MODES = {
   listening: {
     label: "Listening",
     description:
-      "Blue pulses follow a generated audio envelope. No microphone is accessed.",
+      "Cyan pulses indicate speech-recognition activity, or a manual visual preview.",
     accent: "blue",
   },
   analyzing: {
@@ -29,12 +29,20 @@ export const NEURAL_MODES = {
   responding: {
     label: "Responding",
     description:
-      "Rhythmic illumination accompanies a simulated voice waveform.",
+      "Rhythmic illumination indicates browser speech playback, or a manual visual preview.",
     accent: "blue",
+  },
+  error: {
+    label: "Attention",
+    description: "Brief restrained warning for an application or voice error.",
+    accent: "orange",
   },
 } as const;
 export type NeuralMode = keyof typeof NEURAL_MODES;
-export const MODE_ORDER = Object.keys(NEURAL_MODES) as NeuralMode[];
+export const MODE_ORDER = (Object.keys(NEURAL_MODES) as NeuralMode[]).filter(
+  (mode) => mode !== "error",
+);
+export const RENDER_MODE_ORDER: NeuralMode[] = [...MODE_ORDER, "error"];
 export const SCENARIOS: {
   command: string;
   mode: NeuralMode;
@@ -79,7 +87,7 @@ export function classifyActivity(prompt: string): NeuralMode {
     return "retrieval";
   return "analyzing";
 }
-// Purely synthetic envelope, shared by the neural renderer and voice visualizer.
+// Artistic shader envelope only. This is never measured microphone/playback amplitude.
 export function simulatedAmplitude(time: number) {
   return Math.max(
     0.08,

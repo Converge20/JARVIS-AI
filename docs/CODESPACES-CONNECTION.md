@@ -1,5 +1,7 @@
 # Codespaces origin validation and connection feedback
 
+> Browser voice and safe Markdown are now implemented in [Phase 4](PHASE-4-VOICE.md), which supersedes the earlier voice-disabled notes below. The Groq setup and strict origin/proxy protections remain current.
+
 ## Cause and fix
 
 The former backend fallback compared `Origin` against `http://${Host}`. An authenticated Codespaces page is served over HTTPS while the Vite/API hop is HTTP, and its Host may be rewritten. Without a correctly persisted manual `AXIOM_ALLOWED_ORIGIN`, that legitimate browser request failed before Groq was contacted. A copied origin with a trailing slash could also mismatch the browser's serialized origin.

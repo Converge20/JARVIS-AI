@@ -1,8 +1,9 @@
 import "@testing-library/jest-dom/vitest";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, within, act, cleanup } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "./App";
+import { installVoiceMocks } from "../tests/voice-mocks";
 import { TASK_KEY } from "./services/tasks";
 beforeEach(() => {
   localStorage.clear();
@@ -18,7 +19,11 @@ beforeEach(() => {
     }),
   );
 });
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+});
 it("creates, edits, completes, persists, and deletes a task", async () => {
   const user = userEvent.setup();
   const view = render(<App />);
@@ -131,7 +136,7 @@ it("shows configuration errors without a fabricated assistant answer", async () 
     "Configuration required",
   );
   expect(document.querySelector(".neural-state-readout")).toHaveTextContent(
-    "Idle",
+    "Attention",
   );
   expect(screen.getByRole("log")).not.toHaveTextContent("pending tasks");
 });
@@ -208,22 +213,18 @@ it("acknowledges actual task retrieval and does not simulate audio output", asyn
   expect(document.querySelector(".neural-state-readout")).toHaveTextContent(
     "Knowledge retrieval",
   );
-  expect(
-    screen.getByRole("button", { name: "Voice not enabled" }),
-  ).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Ask by voice" })).toBeDisabled();
 });
-it("keeps voice inactive and exposes future voice preferences", async () => {
+it("offers text fallback without starting a microphone and exposes browser voice settings", async () => {
   const user = userEvent.setup();
   render(<App />);
+  expect(screen.getByRole("button", { name: "Ask by voice" })).toBeDisabled();
   expect(
-    screen.getByRole("button", { name: "Voice not enabled" }),
-  ).toBeDisabled();
-  expect(screen.getByText("Microphone is not accessed")).toBeInTheDocument();
+    screen.getByText(/Speech recognition is unavailable here/),
+  ).toBeInTheDocument();
   await user.click(screen.getByRole("button", { name: "Preferences" }));
-  await user.selectOptions(
-    screen.getByLabelText("Future synthetic voice"),
-    "fable",
-  );
+  const dialog = screen.getByRole("dialog");
+  expect(within(dialog).getByLabelText("Speaking voice")).toBeDisabled();
   await user.click(
     screen.getByRole("button", { name: "Ambient animations On" }),
   );
@@ -231,6 +232,7 @@ it("keeps voice inactive and exposes future voice preferences", async () => {
     screen.getByRole("button", { name: "Ambient animations Paused" }),
   ).toHaveAttribute("aria-pressed", "false");
 });
+
 it("Check connection shows loading, prevents duplicate checks and displays a fresh visible result", async () => {
   let finish!: (value: unknown) => void;
   const fetch = vi
@@ -304,4 +306,82 @@ it("Check connection visibly reports rejected origins and backend outages", asyn
   expect(
     await screen.findByText(/Assistant server unavailable or timed out/),
   ).toBeInTheDocument();
+});
+it("completes a single voice question through Groq and real speech events without duplicate requests", async () => {
+  const mock = installVoiceMocks();
+  let finish!: (value: unknown) => void;
+  const fetch = vi
+    .fn()
+    .mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        status: "ready",
+        message: "Configured",
+        model: "mock",
+      }),
+    })
+    .mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+  vi.stubGlobal("fetch", fetch);
+  const user = userEvent.setup();
+  render(<App />);
+  expect(mock.recognizers).toHaveLength(0);
+  await user.click(screen.getByRole("button", { name: "Ask by voice" }));
+  const recognition = mock.recognizers[0];
+  act(() => recognition.onstart?.());
+  expect(
+    screen.getByRole("status", { name: "Voice status" }),
+  ).toHaveTextContent("Listening");
+  expect(document.querySelector(".neural-state-readout")).toHaveTextContent(
+    "Listening",
+  );
+  act(() => recognition.result("Explain compound interest", false));
+  expect(
+    screen.getByRole("status", { name: "Live speech transcript" }),
+  ).toHaveTextContent("Explain compound interest");
+  act(() => {
+    recognition.result("Explain compound interest");
+    recognition.onend?.();
+  });
+  expect(document.querySelector(".neural-state-readout")).toHaveTextContent(
+    "Analyzing",
+  );
+  expect(mock.synth.speak).not.toHaveBeenCalled();
+  finish({
+    ok: true,
+    json: async () => ({
+      content: "## A useful answer\n\n**Interest** can compound.",
+      proposals: [],
+      events: [],
+      model: "mock",
+    }),
+  });
+  expect(
+    await screen.findByRole("heading", { name: "A useful answer" }),
+  ).toBeInTheDocument();
+  expect(mock.utterances).toHaveLength(1);
+  const utterance = mock.utterances[0];
+  expect(utterance.text).not.toContain("**");
+  act(() => utterance.onstart?.(new Event("start") as SpeechSynthesisEvent));
+  expect(document.querySelector(".neural-state-readout")).toHaveTextContent(
+    "Responding",
+  );
+  act(() => utterance.onend?.(new Event("end") as SpeechSynthesisEvent));
+  expect(document.querySelector(".neural-state-readout")).toHaveTextContent(
+    "Idle",
+  );
+  expect(
+    fetch.mock.calls.filter((call) => call[0] === "/api/chat"),
+  ).toHaveLength(1);
+  await user.click(screen.getByRole("button", { name: "Ask by voice" }));
+  await user.click(
+    within(screen.getByRole("navigation")).getByRole("button", {
+      name: /Tasks/,
+    }),
+  );
+  expect(mock.recognizers[1].abort).toHaveBeenCalled();
 });

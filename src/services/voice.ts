@@ -1,29 +1,90 @@
-// Phase 4 boundary only. No implementation requests microphone permissions or calls a paid API.
-export type VoicePhase = "disabled" | "listening" | "transcribing" | "speaking";
-export interface VoiceEvents {
-  onPhase: (phase: VoicePhase) => void;
-  onAmplitude: (value: number) => void; // 0–1 measured microphone/audio output, never synthetic
-  onTranscript: (text: string) => void;
+export interface RecognitionResultEvent {
+  resultIndex: number;
+  results: ArrayLike<{
+    isFinal: boolean;
+    [index: number]: { transcript: string };
+  }>;
 }
-export interface VoiceTransport {
-  pushToTalk(events: VoiceEvents): Promise<void>;
-  speak(text: string, preset: VoicePreset, events: VoiceEvents): Promise<void>;
+export interface BrowserRecognition {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  maxAlternatives: number;
+  onstart: (() => void) | null;
+  onend: (() => void) | null;
+  onresult: ((event: RecognitionResultEvent) => void) | null;
+  onerror: ((event: { error: string }) => void) | null;
+  start(): void;
   stop(): void;
+  abort(): void;
 }
-export interface VoicePreset {
-  voice: "onyx" | "echo" | "fable";
-  model: "gpt-4o-mini-tts";
-  instructions: string;
+export type RecognitionConstructor = new () => BrowserRecognition;
+export function recognitionConstructor(): RecognitionConstructor | undefined {
+  const browser = window as typeof window & {
+    SpeechRecognition?: RecognitionConstructor;
+    webkitSpeechRecognition?: RecognitionConstructor;
+  };
+  const candidate =
+    browser.SpeechRecognition ?? browser.webkitSpeechRecognition;
+  return typeof candidate === "function" ? candidate : undefined;
 }
-export const VOICE_PRESETS: VoicePreset["voice"][] = ["onyx", "echo", "fable"];
-export const BRITISH_VOICE: VoicePreset = {
-  model: "gpt-4o-mini-tts",
-  voice: "onyx",
-  instructions:
-    "Use an original masculine synthetic voice with natural British English pronunciation, a calm slightly deep tone, articulate delivery and natural pacing. Never imitate an actor or identifiable person.",
-};
-export const voiceAvailability = {
-  enabled: false,
-  message:
-    "Voice is prepared for a later phase. Microphone and paid speech APIs are disabled.",
-} as const;
+export type VoicePhase =
+  | "idle"
+  | "requesting"
+  | "listening"
+  | "transcribing"
+  | "queued"
+  | "speaking"
+  | "error";
+export const voiceId = (voice: SpeechSynthesisVoice) =>
+  voice.voiceURI || `${voice.name}|${voice.lang}`;
+export function preferredVoice(voices: SpeechSynthesisVoice[]) {
+  // Gender is NOT part of the API. These names are only a preference heuristic.
+  const score = (v: SpeechSynthesisVoice) =>
+    (/^en[-_]GB$/i.test(v.lang) ? 100 : /^en\b/i.test(v.lang) ? 40 : 0) +
+    (/\b(daniel|george|arthur|oliver|ryan|thomas|male)\b/i.test(v.name) &&
+    !/female/i.test(v.name)
+      ? 20
+      : 0) +
+    (v.localService ? 5 : 0) +
+    (v.default ? 1 : 0);
+  return [...voices].sort((a, b) => score(b) - score(a))[0];
+}
+export function speechText(markdown: string) {
+  return markdown
+    .replace(/```[\s\S]*?```/g, " Code example omitted from speech. ")
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/<[^>]*>/g, "")
+    .replace(/^\s*\|?[\s:|-]+\|[\s:|-]*$/gm, "")
+    .replace(/^[ \t]{0,3}(?:#{1,6}\s+|>\s*|[-*+]\s+)/gm, "")
+    .replace(/[*_`~]/g, "")
+    .replace(/\|/g, ", ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 6000);
+}
+export function speechChunks(text: string) {
+  return (
+    text
+      .match(/.{1,180}(?:\s|$)|\S{1,180}/g)
+      ?.map((s) => s.trim())
+      .filter(Boolean) ?? []
+  );
+}
+export const recognitionError = (code: string) =>
+  ({
+    "not-allowed":
+      "Microphone permission was denied or speech recognition is blocked. Allow microphone access for this private preview, or type your question.",
+    "service-not-allowed":
+      "The browser speech service is unavailable or blocked. Use text input.",
+    "audio-capture":
+      "No usable microphone was found. Check your browser and device input settings.",
+    "no-speech":
+      "No speech was detected. Click the microphone to try again, or type your question.",
+    network:
+      "The browser speech-recognition service could not connect. It may require an external network service. Text input still works.",
+    "language-not-supported":
+      "British English recognition is unavailable in this browser. Use text input.",
+  })[code] ??
+  "Speech recognition failed. Please try a short question or use text input.";

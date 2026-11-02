@@ -66,7 +66,10 @@ test("uses the existing SDK against Groq only, without unsupported storage field
   let payload;
   const providerFetch = async (url, init) => {
     assert.equal(String(url), "https://api.groq.com/openai/v1/responses");
-    assert.equal(new Headers(init.headers).get("authorization"), `Bearer ${env.GROQ_API_KEY}`);
+    assert.equal(
+      new Headers(init.headers).get("authorization"),
+      `Bearer ${env.GROQ_API_KEY}`,
+    );
     assert.ok(!init.body.includes(env.GROQ_API_KEY));
     payload = JSON.parse(init.body);
     return new Response(
@@ -395,4 +398,28 @@ test("network failures and unavailable models produce clear redacted messages", 
       e.message.includes("GROQ_MODEL") &&
       !e.message.includes("private"),
   );
+});
+test("production document permits same-origin microphone activation but denies camera access", async () => {
+  const { mkdtemp, writeFile, rm } = await import("node:fs/promises");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const dist = await mkdtemp(join(tmpdir(), "axiom-voice-policy-"));
+  await writeFile(
+    join(dist, "index.html"),
+    "<!doctype html><title>Voice policy fixture</title>",
+  );
+  const server = createServer({ env: {}, dist });
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  try {
+    const response = await fetch(`http://127.0.0.1:${server.address().port}/`);
+    assert.equal(response.status, 200);
+    assert.equal(
+      response.headers.get("permissions-policy"),
+      "microphone=(self), camera=()",
+    );
+  } finally {
+    server.closeAllConnections();
+    await new Promise((resolve) => server.close(resolve));
+    await rm(dist, { recursive: true, force: true });
+  }
 });

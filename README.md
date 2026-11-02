@@ -24,11 +24,13 @@ Complete source URLs, authors, licenses, pinned revisions, adaptation notices, a
 - **Anatomy · effects off:** inspect the exact same geometry in opaque gray with neutral lighting. Every node, path, glow, and bloom layer is removed, so the silhouette and folds can be checked directly.
 - Six neural visual previews and five manual scenarios, preserved alongside real activity: Analyzing while awaiting Groq, task activity after applying changes, and a short acknowledgement after an actual local task retrieval tool returns. A late reply cannot override a newer preview.
 - Full task management: add, edit, prioritize, complete, reopen, delete, and filter. Saved `jarvis.tasks.v1` data remains compatible across refreshes. Existing task titles are preserved.
+- Optional one-question push-to-talk using the browser Web Speech API, plus browser-confirmed voice discovery, British voice preference, preview, rate/pitch/volume, stop and mute controls. Spoken replies default off until activation.
+- Safe assistant Markdown with headings, bold, lists, code and GFM tables; raw HTML, scripts, unsafe links and remote images are blocked.
 - Real Groq text responses with recent multi-turn context, connection/configuration/error feedback, and no scripted fallback. Natural-language task tools retrieve the list or propose a dated task, completion, edit or deletion. Every AI mutation requires an explicit confirmation; stale proposals are rejected.
 - Five navigation views, a live local clock/date, actual task summaries, storage status, and a session activity log.
 - Responsive layouts, keyboard controls, reduced-motion support, a session animation preference, Eco mode, Static fallback, and recovery from WebGL context loss.
 
-Neural graphics are an **illustration of application activity**, never a measurement of cognition or real neural tracts. Manual state/scenario controls are explicitly visual demonstrations. Real AI text requires server configuration and explicit opt-in. No microphone is accessed and no audio is recorded or generated.
+Neural graphics are an **illustration of application activity**, never a measurement of cognition or real neural tracts. Manual state/scenario controls are explicitly visual demonstrations. Real AI text requires server configuration and explicit opt-in. Microphone permission is requested only when you click Ask by voice. Browser recognition may send audio to its vendor; AXIOM sends only transcript text through the existing chat API and does not record/store audio. Browser synthesis reads replies only after activation.
 
 ## Run and test
 
@@ -62,11 +64,11 @@ Use the six buttons beneath the brain. Non-idle manual previews last eight secon
 | State               | Visual behavior / trigger                                                                                     |
 | ------------------- | ------------------------------------------------------------------------------------------------------------- |
 | Idle                | Sparse blue pulses and gentle orientation drift.                                                              |
-| Listening           | Manual visual preview only. Real listening is disabled until microphone/voice integration is approved.        |
+| Listening           | Actual browser recognition start/end, or an explicitly labelled manual preview.                               |
 | Analyzing           | Orange processing pattern during an actual AI request; also available as a manual visual preview.             |
 | Task processing     | Focused clusters on real task changes, including confirmed AI proposals; manual preview also available.       |
 | Knowledge retrieval | Acknowledgement after a real local task-list tool returns; manual preview also available. No web-search tool. |
-| Responding          | Manual visual preview only. Text responses return to Idle; real audio synchronisation is planned.             |
+| Responding          | Actual browser synthesis start/end, or an explicitly labelled manual preview; pulses are not measured audio.  |
 
 Scenario profiles: Plan my schedule → task cluster A; Explain a finance concept → retrieval; Analyze information → sequential analysis; Create a task → a different task cluster D; Answer a general question → responding. Create actual tasks through the Tasks panel or a confirmed AI task proposal. `⌘/Ctrl + K` opens conversation.
 
@@ -109,7 +111,7 @@ Tasks stay in the current browser origin's local storage. They are not encrypted
 
 The backend uses Groq’s OpenAI-compatible Responses API through the existing SDK (`openai/gpt-oss-20b` by default, configurable with `GROQ_MODEL`). All provider requests go to `https://api.groq.com/openai/v1`; there is no OpenAI fallback. It stays disabled unless server-side `GROQ_API_KEY` is configured **and** `GROQ_ENABLED=true` is explicitly set. Never use a `VITE_*` credential variable. `.env.example` contains placeholders only; `.gitignore` excludes real environment files. No real API calls are made by tests.
 
-Voice transport/event interfaces, original British voice direction, and session-only future voice selection are prepared, but speech APIs, microphone access, transcription and audio output are **not implemented or enabled**. No calendar/email connections, telemetry, device controls or deployment workflow is added. Current setup, usage safeguards, data flow and limitations: [Phase 3B — Groq](docs/PHASE-3B-GROQ.md).
+Browser voice is implemented with Web Speech recognition and SpeechSynthesis. Only available browser voices are listed; British English and common male voice names are preferred, but voice quality and gender cannot be guaranteed by the API. There are no paid speech APIs, audio uploads to AXIOM, new accounts, calendar/email connections, device controls or deployment workflow. The microphone is not accessed on load. Current voice setup, privacy, limitations and tests: [Phase 4 — browser voice](docs/PHASE-4-VOICE.md). Groq configuration: [Phase 3B](docs/PHASE-3B-GROQ.md).
 
 Changes remain on a draft review branch. Nothing is automatically merged into `main` or deployed.
 

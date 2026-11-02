@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
   Activity as ActivityIcon,
-  AudioLines,
   ArrowUpRight,
   Bell,
   Blocks,
@@ -28,7 +27,8 @@ import {
   Wifi,
   X,
 } from "lucide-react";
-import { Waveform } from "./components/Waveform";
+import { VoicePanel, VoiceSettings } from "./components/VoicePanel";
+import { useBrowserVoice } from "./hooks/useBrowserVoice";
 import { NeuralPanel } from "./components/neural/NeuralPanel";
 import { NEURAL_MODES } from "./components/neural/activity";
 import { useNeuralActivity } from "./hooks/useNeuralActivity";
@@ -39,11 +39,6 @@ import { useTasks } from "./hooks/useTasks";
 import { assistant, CONNECTION_LABELS } from "./services/assistant";
 import type { Connection } from "./services/assistant";
 import { applyTaskProposal } from "./services/taskActions";
-import {
-  BRITISH_VOICE,
-  VOICE_PRESETS,
-  voiceAvailability,
-} from "./services/voice";
 import type { Activity, Message, Task, TaskProposal } from "./types";
 const stamp = () =>
   new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -65,7 +60,25 @@ export default function App() {
   });
   const [chatError, setChatError] = useState("");
   const [proposals, setProposals] = useState<TaskProposal[]>([]);
-  const [voicePreset, setVoicePreset] = useState(BRITISH_VOICE.voice);
+  const voice = useBrowserVoice({
+    canListen: () => !busy.current && !proposals.length,
+    onTranscript: (text) => {
+      void send(text);
+    },
+    onPhase: (phase) => {
+      if (phase === "listening") neural.activate("listening");
+      else if (phase === "speaking") neural.activate("responding");
+      else if (phase === "transcribing") neural.activate("analyzing");
+      else if (phase === "idle" && !busy.current) neural.activate("idle");
+    },
+    onError: () => {
+      if (!busy.current) neural.activate("error", 2200);
+    },
+  });
+  useEffect(() => {
+    voice.cancelListening();
+    voice.stopSpeaking();
+  }, [page]);
   const [checkingConnection, setCheckingConnection] = useState(false);
   const [connectionCheckedAt, setConnectionCheckedAt] = useState("");
   const checkBusy = useRef(false);
@@ -123,7 +136,7 @@ export default function App() {
       role: "assistant",
       time: stamp(),
       content:
-        "Your workspace is ready. Connect Groq to ask questions and manage tasks in conversation. Tasks are also available locally. Voice remains disabled.",
+        "Your workspace is ready. Connect Groq to ask questions and manage tasks in conversation. Tasks are also available locally. Voice is available on supported browsers; activate it only when you want to speak.",
     },
   ]);
   const [activity, setActivity] = useState<Activity[]>([
@@ -177,6 +190,9 @@ export default function App() {
   }
   async function send(text: string) {
     if (busy.current || proposals.length || !text.trim()) return;
+    voice.cancelListening();
+    voice.stopSpeaking();
+    const speechToken = voice.replyToken();
     busy.current = true;
     ++connectionRevision.current; // An older probe must not overwrite this request result.
     setThinking(true);
@@ -207,7 +223,7 @@ export default function App() {
         setProposals(reply.proposals);
         setConnection({
           status: "connected",
-          message: "Last Groq request succeeded. Voice remains disabled.",
+          message: "Last Groq request succeeded.",
           model: reply.model,
         });
         log("Groq text response received");
@@ -219,6 +235,7 @@ export default function App() {
           retrieved ? "retrieval" : "idle",
           retrieved ? 1800 : 0,
         );
+        voice.speak(reply.content, speechToken);
       }
     } catch (error) {
       if (alive.current) {
@@ -227,7 +244,7 @@ export default function App() {
         setChatError(message);
         setConnection((c) => ({ ...c, status: "unavailable", message }));
         log("AI request failed; no task changes applied");
-        neural.finish(token);
+        neural.finish(token, "error", 2200);
       }
     } finally {
       busy.current = false;
@@ -261,6 +278,10 @@ export default function App() {
       log("Conversation cleared");
     },
     messages,
+    voiceTranscript: voice.transcript,
+    voiceCapturing: ["requesting", "listening", "transcribing"].includes(
+      voice.phase,
+    ),
     thinking,
     onSend: send,
     connection,
@@ -270,6 +291,14 @@ export default function App() {
     error: chatError,
     proposals,
     onDecision: decide,
+  };
+  const voicePanelProps = {
+    voice,
+    processing: thinking,
+    locked: proposals.length > 0,
+    lastReply:
+      [...messages].reverse().find((m) => m.role === "assistant" && !m.local)
+        ?.content ?? "",
   };
   const complete = tasks.filter((t) => t.completed).length;
   const pending = tasks.length - complete;
@@ -537,26 +566,7 @@ export default function App() {
                   }}
                 />
                 <div className="right-stack">
-                  <section className="panel voice-panel">
-                    <div className="panel-heading">
-                      <div className="heading-inline">
-                        <AudioLines size={17} />
-                        <h2>Voice interface</h2>
-                      </div>
-                      <span className="demo-tag">DISABLED</span>
-                    </div>
-                    <Waveform active={false} />
-                    <p>British voice · next phase</p>
-                    <small>{voiceAvailability.message}</small>
-                    <button className="voice-button" disabled>
-                      <Mic size={16} />
-                      Voice not enabled
-                    </button>
-                    <div className="voice-foot">
-                      <LockKeyhole size={11} />
-                      Microphone is not accessed
-                    </div>
-                  </section>
+                  <VoicePanel {...voicePanelProps} />
                   <Tasks tasks={tasks} onChange={changeTasks} />
                   <section
                     className="panel neural-legend"
@@ -654,7 +664,12 @@ export default function App() {
               </div>
             </>
           )}
-          {page === "Conversation" && <Chat {...chatProps} expanded />}
+          {page === "Conversation" && (
+            <>
+              <VoicePanel {...voicePanelProps} />
+              <Chat {...chatProps} expanded />
+            </>
+          )}
           {page === "Tasks" && (
             <div className="wide-panel">
               <Tasks tasks={tasks} onChange={changeTasks} expanded />
@@ -692,7 +707,7 @@ export default function App() {
                 {
                   icon: Mic,
                   name: "Real-time voice",
-                  text: "Natural voice interaction with explicit microphone permission.",
+                  text: "Push-to-talk recognition and selectable browser speech, with explicit microphone activation.",
                 },
                 {
                   icon: Timer,
@@ -720,7 +735,7 @@ export default function App() {
                   <span className="demo-tag">
                     {name === "AI conversations"
                       ? CONNECTION_LABELS[connection.status]
-                      : "PLANNED"}
+                      : name === "Real-time voice" ? "BROWSER VOICE" : "PLANNED"}
                   </span>
                   <h2>{name}</h2>
                   <p>{text}</p>
@@ -728,7 +743,7 @@ export default function App() {
                     <LockKeyhole size={12} />
                     {name === "AI conversations"
                       ? "Available with server configuration"
-                      : "Not connected · Future milestone"}
+                      : name === "Real-time voice" ? "Available on supported browsers" : "Not connected · Future milestone"}
                   </span>
                 </section>
               ))}
@@ -808,30 +823,7 @@ export default function App() {
                   {motion ? <Pause size={16} /> : <Play size={16} />}Ambient
                   animations<span>{motion ? "On" : "Paused"}</span>
                 </button>
-                <label className="voice-setting">
-                  Future synthetic voice
-                  <select
-                    aria-label="Future synthetic voice"
-                    value={voicePreset}
-                    onChange={(e) =>
-                      setVoicePreset(e.target.value as typeof voicePreset)
-                    }
-                  >
-                    {VOICE_PRESETS.map((voice) => (
-                      <option key={voice} value={voice}>
-                        {voice}
-                        {voice === "onyx"
-                          ? " · preferred British direction"
-                          : ""}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <p className="muted">
-                  Original synthetic voice planned. Accent and tone require
-                  listening validation in the next phase. Selection is
-                  session-only; microphone and speech APIs remain disabled.
-                </p>
+                <VoiceSettings voice={voice} busy={thinking} />
                 <small className="muted">
                   Your device’s reduced-motion preference is also respected. Eco
                   and Static views are available above the brain.
@@ -847,8 +839,10 @@ export default function App() {
                 <p>
                   Tasks persist in this browser. Conversations and activity last
                   for this session. AI requests send recent messages and task
-                  context to Groq under its API data policies. No microphone,
-                  voice API, email, calendar or Mac controls are enabled.
+                  context to Groq under its API data policies. Microphone access
+                  starts only on activation. Browser speech may use external
+                  vendor services. No paid speech API, email, calendar or Mac
+                  controls are enabled.
                 </p>
                 <div className="shortcut">
                   <kbd>⌘ / Ctrl + K</kbd> Open conversation

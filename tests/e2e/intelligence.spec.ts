@@ -118,7 +118,7 @@ test("live backend reports configuration without any AI call", async ({
     /Configuration required|disabled/,
   );
   await expect(
-    page.getByRole("button", { name: "Voice not enabled" }),
-  ).toBeDisabled();
+    page.getByRole("button", { name: "Ask by voice" }),
+  ).toBeVisible();
   await expect(page.locator(".neural-state-readout")).toContainText("Idle");
 });

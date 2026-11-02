@@ -12,6 +12,6 @@ export function previewServerConfig(env) {
         changeOrigin: false,
       },
     },
-    headers: { "Permissions-Policy": "microphone=(), camera=()" },
+    headers: { "Permissions-Policy": "microphone=(self), camera=()" },
   };
 }

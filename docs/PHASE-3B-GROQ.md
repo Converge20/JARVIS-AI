@@ -1,5 +1,7 @@
 # Phase 3B — Groq text intelligence
 
+> Browser voice and safe Markdown are now implemented in [Phase 4](PHASE-4-VOICE.md), which supersedes the earlier voice-disabled notes below. The Groq setup and strict origin/proxy protections remain current.
+
 AXIOM now uses GroqCloud through its official OpenAI-compatible endpoint, using the already installed OpenAI JavaScript SDK. This SDK name does not imply OpenAI API usage: the backend pins `https://api.groq.com/openai/v1`, reads only `GROQ_API_KEY`, and has no fallback to OpenAI or another provider. No dependency was added or upgraded in this phase.
 
 The default is **`openai/gpt-oss-20b`**, a currently supported, tool-capable text model hosted by Groq. The `openai/` prefix identifies its open-weight model family, not an OpenAI API call. Configure a different Groq Responses/function-calling-capable model with server-side `GROQ_MODEL`. GPT OSS uses low reasoning effort to conserve the output allowance. No built-in web search, remote tools, code execution, or speech tools are enabled.

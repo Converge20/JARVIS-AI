@@ -101,8 +101,8 @@ test("uses the same anatomy without WebGL and keeps tasks and conversation usabl
   await expect(page.locator(".brain-fallback")).toBeVisible();
   await expect(page.locator("canvas")).toHaveCount(0);
   await expect(
-    page.getByRole("button", { name: "Voice not enabled" }),
-  ).toBeDisabled();
+    page.getByRole("button", { name: "Ask by voice" }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Add task", exact: true }).click();
   await page.getByLabel("Task name").fill("Fallback task");
   await page.getByRole("button", { name: "Save task" }).click();

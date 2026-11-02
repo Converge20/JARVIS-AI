@@ -53,6 +53,7 @@ const icons = {
   task: Workflow,
   retrieval: Search,
   responding: AudioLines,
+  error: Sparkles,
 };
 export function NeuralPanel({
   mode,

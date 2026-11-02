@@ -54,8 +54,8 @@ test("chat, voice, navigation and responsive layouts work without external reque
   );
   await page.goto("/");
   await expect(
-    page.getByRole("button", { name: "Voice not enabled" }),
-  ).toBeDisabled();
+    page.getByRole("button", { name: "Ask by voice" }),
+  ).toBeVisible();
   await page
     .getByRole("textbox", { name: "Message AXIOM" })
     .fill("Plan my day");

@@ -1,3 +1,4 @@
+import { Markdown } from "./Markdown";
 import { BRAND } from "../config/brand";
 import { useEffect, useRef, useState } from "react";
 import { ArrowUp, CornerDownLeft, MessageSquare, Sparkles } from "lucide-react";
@@ -6,6 +7,8 @@ import { CONNECTION_LABELS } from "../services/assistant";
 import type { Connection } from "../services/assistant";
 export function Chat({
   messages,
+  voiceTranscript,
+  voiceCapturing,
   thinking,
   onSend,
   expanded = false,
@@ -19,6 +22,8 @@ export function Chat({
   onClear,
 }: {
   messages: Message[];
+  voiceTranscript: string;
+  voiceCapturing: boolean;
   thinking: boolean;
   onSend: (text: string) => void;
   expanded?: boolean;
@@ -34,15 +39,11 @@ export function Chat({
   const [input, setInput] = useState("");
   const end = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (messages.length > 1)
-      end.current?.scrollIntoView({
-        behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)")
-          .matches
-          ? "instant"
-          : "smooth",
-        block: "nearest",
-      });
+    // Scroll the message log only; keep voice stop/mute controls in the user's viewport.
+    const log = end.current?.parentElement;
+    if (log && messages.length > 1) log.scrollTop = log.scrollHeight;
   }, [messages, thinking]);
+
   return (
     <section
       className={`panel chat-panel ${expanded ? "expanded" : ""}`}
@@ -75,7 +76,11 @@ export function Chat({
                 <time>{m.time}</time>
                 {m.local && <span>WORKSPACE</span>}
               </div>
-              <p>{m.content}</p>
+              {m.role === "assistant" ? (
+                <Markdown content={m.content} />
+              ) : (
+                <p>{m.content}</p>
+              )}
             </div>
           </div>
         ))}
@@ -129,13 +134,27 @@ export function Chat({
         <div ref={end} />
       </div>
       <div className="chat-bottom">
+        {voiceCapturing && (
+          <p
+            className="voice-transcript"
+            role="status"
+            aria-label="Live speech transcript"
+          >
+            {voiceTranscript
+              ? `Heard: ${voiceTranscript}`
+              : "Speak your question…"}
+          </p>
+        )}
         <div className="suggestions">
-          <button disabled={thinking || proposals.length > 0} onClick={onClear}>
+          <button
+            disabled={thinking || voiceCapturing || proposals.length > 0}
+            onClick={onClear}
+          >
             New conversation
           </button>
           {["Plan my day", "What can you do?"].map((text) => (
             <button
-              disabled={thinking || proposals.length > 0}
+              disabled={thinking || voiceCapturing || proposals.length > 0}
               key={text}
               onClick={() => onSend(text)}
             >
@@ -148,7 +167,12 @@ export function Chat({
           className="chat-form"
           onSubmit={(e) => {
             e.preventDefault();
-            if (input.trim() && !thinking && !proposals.length) {
+            if (
+              input.trim() &&
+              !thinking &&
+              !voiceCapturing &&
+              !proposals.length
+            ) {
               onSend(input.trim());
               setInput("");
             }
@@ -166,7 +190,12 @@ export function Chat({
           </kbd>
           <button
             aria-label="Send message"
-            disabled={!input.trim() || thinking || proposals.length > 0}
+            disabled={
+              !input.trim() ||
+              thinking ||
+              voiceCapturing ||
+              proposals.length > 0
+            }
           >
             <ArrowUp size={18} />
           </button>
