@@ -1,0 +1,100 @@
+{
+  "sources": {
+    "mri": {
+      "path": "work/anatomy/mri-brain.glb",
+      "sha256": "ce761741d866e32d7a5b7638f4cacd5ec03e2b582e72c8218aba483ac28125e8"
+    },
+    "bodyparts": {
+      "path": "work/anatomy/bodyparts-brain.glb",
+      "sha256": "1e8d62f8579c195a85cf81790cd74b7d1d158e182f418767668089e209f0c478"
+    }
+  },
+  "registration": {
+    "bodypartsToMriScale": 47.5,
+    "bodypartsToMriTranslation": [
+      0.44,
+      7.0,
+      -9.41
+    ],
+    "bodypartsXAxisReflected": true,
+    "normalizationCenter": [
+      0.4399999976158142,
+      10.0,
+      -9.40999984741211
+    ],
+    "normalizationScale": 0.02,
+    "limitation": "Multi-source anatomical composite; alignment is illustrative, not clinical or a single-subject reconstruction."
+  },
+  "outputs": {
+    "full": {
+      "file": "brain-full.glb.gz",
+      "bytes": 4455393,
+      "decodedBytes": 6271340,
+      "sha256": "301ed403566b55472ebf6b75e67832f2d517ad4cea723c792f562dc7772294c4",
+      "meshes": {
+        "cortex": {
+          "triangles": 150256,
+          "vertices": 75132
+        },
+        "cerebellum": {
+          "triangles": 47700,
+          "vertices": 24324
+        },
+        "midbrain": {
+          "triangles": 13624,
+          "vertices": 8576
+        },
+        "pons": {
+          "triangles": 20650,
+          "vertices": 11943
+        },
+        "medulla": {
+          "triangles": 12096,
+          "vertices": 6477
+        }
+      }
+    },
+    "eco": {
+      "file": "brain-eco.glb.gz",
+      "bytes": 1730194,
+      "decodedBytes": 2405312,
+      "sha256": "782bb51b7f7faedbb818caab4d14aa2f2b4c89d288d9b90479c4af6903270833",
+      "meshes": {
+        "cortex": {
+          "triangles": 65000,
+          "vertices": 32504
+        },
+        "cerebellum": {
+          "triangles": 15998,
+          "vertices": 8182
+        },
+        "midbrain": {
+          "triangles": 3998,
+          "vertices": 2673
+        },
+        "pons": {
+          "triangles": 4999,
+          "vertices": 3145
+        },
+        "medulla": {
+          "triangles": 2999,
+          "vertices": 1631
+        }
+      }
+    }
+  },
+  "network": {
+    "full": {
+      "nodes": 640,
+      "paths": 37,
+      "generatorSeed": 76321,
+      "routing": "A* on this LOD cortical triangle-edge graph; 0.007 normal offset"
+    },
+    "eco": {
+      "nodes": 320,
+      "paths": 19,
+      "generatorSeed": 76321,
+      "routing": "A* on this LOD cortical triangle-edge graph; 0.007 normal offset"
+    }
+  }
+}

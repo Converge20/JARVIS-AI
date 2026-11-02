@@ -1,31 +1,42 @@
 {
   "name": "jarvis-ai",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.3.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host 0.0.0.0",
+    "dev": "node scripts/dev.mjs",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test": "vitest run && node --test server/*.test.mjs",
+    "test:e2e": "playwright test",
+    "dev:web": "vite --host 0.0.0.0",
+    "dev:api": "node --env-file-if-exists=.env server/index.mjs",
+    "start": "node --env-file-if-exists=.env server/index.mjs"
   },
   "dependencies": {
+    "@react-three/fiber": "^9.8.2",
+    "lucide-react": "^0.468.0",
+    "openai": "^7.47.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "lucide-react": "^0.468.0"
+    "react-markdown": "^10.1.0",
+    "rehype-sanitize": "^6.0.0",
+    "remark-gfm": "^4.0.1",
+    "three": "^0.180.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^24.19.2",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
+    "@types/three": "^0.180.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "jsdom": "^26.1.0",
     "typescript": "~5.9.3",
     "vite": "^7.2.0",
-    "vitest": "^3.2.4",
-    "jsdom": "^26.1.0",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/user-event": "^14.6.1",
-    "@playwright/test": "^1.56.0"
+    "vitest": "^4.1.12"
   }
 }

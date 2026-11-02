@@ -1,3 +1,4 @@
+import { BRAND } from "../config/brand";
 import type { Task } from "../types";
 export const TASK_KEY = "jarvis.tasks.v1";
 export const initialTasks: Task[] = [
@@ -15,7 +16,7 @@ export const initialTasks: Task[] = [
   },
   {
     id: "welcome-3",
-    title: "Try a conversation with JARVIS",
+    title: `Try a conversation with ${BRAND.name}`,
     priority: "low",
     completed: false,
   },
@@ -41,7 +42,12 @@ export function loadTasks(): { tasks: Task[]; error: string } {
           t.title.trim() &&
           t.title.length <= 180 &&
           ["high", "medium", "low"].includes(t.priority) &&
-          typeof t.completed === "boolean",
+          typeof t.completed === "boolean" &&
+          (t.dueDate === undefined ||
+            (typeof t.dueDate === "string" &&
+              /^\d{4}-\d{2}-\d{2}$/.test(t.dueDate) &&
+              !Number.isNaN(Date.parse(t.dueDate)) &&
+              new Date(t.dueDate).toISOString().slice(0, 10) === t.dueDate)),
       ) ||
       new Set(parsed.map((t) => t.id)).size !== parsed.length
     )

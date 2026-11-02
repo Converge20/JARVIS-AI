@@ -1,92 +1,118 @@
-# JARVIS-AI
+# AXIOM — Personal Intelligence Interface
 
-**Personal intelligence. A focused workspace.**
+A personal assistant with opt-in, server-backed Groq text intelligence in **Converge20/JARVIS-AI**, built with React, TypeScript, Vite, Three.js, and React Three Fiber. AXIOM is a provisional name, configurable in `src/config/brand.ts`.
 
-JARVIS-AI is an original, futuristic personal assistant prototype built with React, TypeScript, and Vite. The first milestone brings a cinematic command center together with practical, local task management. It requires no API keys, account, backend, or paid services.
+![AXIOM Phase 3 dashboard — AI configuration required](docs/axiom-phase3-desktop.jpg)
 
-![JARVIS command center](docs/dashboard-desktop.jpg)
+[Effects-off anatomy](docs/axiom-anatomy.jpg) · [Neutral side view](docs/axiom-anatomy-side.jpg) · [Brain detail](docs/axiom-brain.jpg) · [Mobile](docs/axiom-mobile.jpg) · [Visual validation](docs/ANATOMY-VALIDATION.md)
 
-[Mobile preview](docs/dashboard-mobile.jpg)
+## Anatomical correction
 
-## Current capabilities
+The former parametric oval has been removed. The brain now uses licensed anatomical meshes:
 
-- **Command center:** animated holographic core, rotating rings, subtle particles, responsive glass-like panels, live local clock, and task summaries.
-- **Tasks:** add, edit, complete, reopen, delete, and prioritize objectives. Filter all, pending, or completed tasks. Tasks persist after refresh using browser local storage. First launch includes editable onboarding tasks.
-- **Conversation:** session history, user and assistant messages, typing indicator, and suggested prompts. Scripted responses can summarize your actual pending tasks, report the current date/time, and explain the prototype.
-- **Voice demonstration:** microphone button, animated waveform, and a listening simulation that stops automatically after eight seconds. **No microphone is accessed and no audio is recorded.**
-- **System overview:** actual workspace state, storage availability, and an activity log of interface events. No fabricated CPU, memory, network, or other computer measurements.
-- **Usability:** keyboard-accessible controls and dialogs, reduced-motion support, a session animation toggle, and `⌘/Ctrl + K` to open conversation.
+- **Cortex:** MRI-derived bilateral pial surface from OpenNeuro ds006128, sub-01, snapshot 1.0.11 (**CC0 1.0**), via a pinned anatomical atlas. Full detail preserves all **150,256 native cortical triangles** and genuine hemispheric variation.
+- **Cerebellum and stem:** separate BodyParts3D (**CC BY 4.0**) cerebellum, midbrain, pons, and medulla meshes, aligned with the cortex by a recorded uniform transformation.
+- **Honest scope:** this is a multi-source anatomical composite, not a single-subject reconstruction or clinical model. The lower structures are less detailed than the MRI cortex. No ellipsoid, synthetic gyri, sphere cerebellum, or tube stem is used.
 
-**All assistant replies are scripted demonstrations, not real AI.** The interface labels this throughout. Calendar, email, real voice, Mac controls, weather, and personal memory are planned, disconnected capabilities.
+**BodyParts3D, © The Database Center for Life Science licensed under CC Attribution 4.0 International.**
 
-## Run locally
+Complete source URLs, authors, licenses, pinned revisions, adaptation notices, and checksum records are retained in [model attribution](public/models/ATTRIBUTION.md), `licenses/anatomy/`, and `public/models/provenance.json`. Those data credits also apply to derived screenshots. No application code from the source anatomy viewers is copied.
 
-Prerequisite: Node.js 22.12+ or Node.js 24 LTS, with npm. These commands install project dependencies only; they do not require administrator privileges or system-wide software installation.
+## Working features
+
+- Large, rotatable anatomical brain with blue materials, fold shading, real self-shadows, restrained bloom, luminous nodes, and surface-following blue/orange signal packets.
+- **Anatomy · effects off:** inspect the exact same geometry in opaque gray with neutral lighting. Every node, path, glow, and bloom layer is removed, so the silhouette and folds can be checked directly.
+- Six neural visual previews and five manual scenarios, preserved alongside real activity: Analyzing while awaiting Groq, task activity after applying changes, and a short acknowledgement after an actual local task retrieval tool returns. A late reply cannot override a newer preview.
+- Full task management: add, edit, prioritize, complete, reopen, delete, and filter. Saved `jarvis.tasks.v1` data remains compatible across refreshes. Existing task titles are preserved.
+- Optional one-question push-to-talk using the browser Web Speech API, plus browser-confirmed voice discovery, British voice preference, preview, rate/pitch/volume, stop and mute controls. Spoken replies default off until activation.
+- Safe assistant Markdown with headings, bold, lists, code and GFM tables; raw HTML, scripts, unsafe links and remote images are blocked.
+- Real Groq text responses with recent multi-turn context, connection/configuration/error feedback, and no scripted fallback. Natural-language task tools retrieve the list or propose a dated task, completion, edit or deletion. Every AI mutation requires an explicit confirmation; stale proposals are rejected.
+- Five navigation views, a live local clock/date, actual task summaries, storage status, and a session activity log.
+- Responsive layouts, keyboard controls, reduced-motion support, a session animation preference, Eco mode, Static fallback, and recovery from WebGL context loss.
+
+Neural graphics are an **illustration of application activity**, never a measurement of cognition or real neural tracts. Manual state/scenario controls are explicitly visual demonstrations. Real AI text requires server configuration and explicit opt-in. Microphone permission is requested only when you click Ask by voice. Browser recognition may send audio to its vendor; AXIOM sends only transcript text through the existing chat API and does not record/store audio. Browser synthesis reads replies only after activation.
+
+## Run and test
+
+Use Node.js 24 LTS (or Node 22.12+) with npm. The dashboard and local task manager work without keys. Real AI requires your GroqCloud free-tier project key and approved API usage. No administrator permissions are required.
 
 ```bash
 git clone https://github.com/Converge20/JARVIS-AI.git
 cd JARVIS-AI
-# Before merge, check out the prototype branch:
-git checkout feat/jarvis-command-center
+git checkout feat/axiom-neural-interface
 npm ci
+cp .env.example .env  # optional: defaults keep AI disabled
 npm run dev
 ```
 
-Open **http://localhost:5173**. The Vite script binds to `0.0.0.0` for cloud-workspace previews; to restrict a personal preview to your machine, use `npm run dev -- --host 127.0.0.1`.
+Open **http://localhost:5173** on the development machine. `npm run dev` starts Vite and a loopback-only Node backend on port 3001; Vite forwards `/api` to it. In Codespaces, use its authenticated **Private** forwarded port 5173 instead of your Mac’s localhost. Do not expose port 3001 separately. See [Phase 3B setup and safeguards](docs/PHASE-3B-GROQ.md).
 
 ```bash
-npm run build       # TypeScript checking + production bundle in dist/
-npm run preview     # Preview that production bundle at http://localhost:4173
-npm test            # Automated service and React interaction tests
-npm run test:e2e    # Chromium browser workflows
+npm run build       # TypeScript + production bundle in dist/
+npm start           # Serves dist/ AND /api on http://127.0.0.1:3001
+npm run preview     # Frontend-only Vite preview; no AI backend proxy
+npm test            # Asset, geometry, routing, service, state, and React tests
+npm run test:e2e    # Chromium workflows and real WebGL validation
 ```
 
-For the browser tests, install Playwright's Chromium into your development environment with `npx playwright install chromium`. Where a Chromium binary is already installed, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/path/to/chromium` instead. This is only a development/test dependency and is never required by app users. CI installs browser dependencies on an ephemeral Ubuntu runner.
+Install the development browser with `npx playwright install chromium`, or set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/path/to/chromium` to an installed binary. CI uses test-only software WebGL flags on an ephemeral runner, not on your Mac. The application itself does not require those flags or any system-wide installation.
 
-## Architecture
+## Try every visual state
+
+Use the six buttons beneath the brain. Non-idle manual previews last eight seconds, then return to Idle. The five scenario buttons preview patterns only; they do not execute commands.
+
+| State               | Visual behavior / trigger                                                                                     |
+| ------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Idle                | Sparse blue pulses and gentle orientation drift.                                                              |
+| Listening           | Actual browser recognition start/end, or an explicitly labelled manual preview.                               |
+| Analyzing           | Orange processing pattern during an actual AI request; also available as a manual visual preview.             |
+| Task processing     | Focused clusters on real task changes, including confirmed AI proposals; manual preview also available.       |
+| Knowledge retrieval | Acknowledgement after a real local task-list tool returns; manual preview also available. No web-search tool. |
+| Responding          | Actual browser synthesis start/end, or an explicitly labelled manual preview; pulses are not measured audio.  |
+
+Scenario profiles: Plan my schedule → task cluster A; Explain a finance concept → retrieval; Analyze information → sequential analysis; Create a task → a different task cluster D; Answer a general question → responding. Create actual tasks through the Tasks panel or a confirmed AI task proposal. `⌘/Ctrl + K` opens conversation.
+
+Select **Anatomy · effects off** to validate the shape independently of lighting effects. Use **Visual quality** for Full detail, Eco, or Static. Preferences → Ambient animations pauses motion; the operating system's reduced-motion preference also stops the animation loop.
+
+## Rendering and performance
+
+- Full detail: approximately 244,000 triangles across the five anatomical meshes, 640 nodes, and 37 cortical edge routes. Eco uses about 93,000 triangles, 320 nodes, 19 routes, a lower pixel ratio, and no bloom or shadow pass.
+- The renderer is lazy-loaded. Full active states request up to 60 frames/second; Idle and Eco request up to 30. Rendering stops when hidden/offscreen, paused, or under reduced motion. Explicit changes still render a single frame.
+- Actual mesh normals and native cortical curvature support fold shading. A small high-threshold bloom pass uses Three.js's own modules; no new postprocessing framework is added. Full-detail self-shadows provide depth without replacing the anatomical silhouette.
+- Signal routes are precomputed with A* on the triangle-edge graph. Packet positions update in place with arc-length/linear edge interpolation. They cannot take Catmull–Rom shortcuts through sulci or across empty space.
+- Compressed local GLB assets load only for 3D: roughly 4.46 MB Full detail or 1.73 MB Eco, plus their small network file. Modern desktop Chrome supports the native gzip decompression API used by the loader. No external model/texture requests occur at runtime.
+- Static/no-WebGL mode displays a render of the same licensed composite. Loading/render failures and context loss preserve the working dashboard and offer a retry. Intentional Static/Eco/Full changes do not create false failure messages.
+- The lazy Three.js renderer is about 258 KB gzip and produces Vite's standard uncompressed chunk-size advisory. 60 FPS has not been benchmarked on physical macOS hardware; software WebGL, high-DPI displays, and power-saving modes can be slower. Eco/Static are available to reduce load.
+
+## Architecture and reproducible data pipeline
 
 ```text
-src/
-  App.tsx                  Navigation, session state, activity, dashboard
-  components/
-    Core.tsx               CSS-based holographic core and waveform
-    Chat.tsx               Conversation history and composer
-    Tasks.tsx              Task filters, editor and actions
-  hooks/useTasks.ts        Persistence lifecycle and storage error handling
-  services/
-    assistant.ts           AssistantProvider contract and scripted provider
-    tasks.ts               Versioned task storage and validation
-  types.ts                 Shared domain types
-  styles.css               Responsive visual system and reduced-motion rules
-  main.tsx                 React entry point
-public/favicon.svg         Original project mark
-tests/                     Browser workflows and test setup
-.github/workflows/ci.yml   Tests and production build on pull requests
+src/config/brand.ts                    Provisional branding
+src/components/neural/BrainScene.tsx    Licensed mesh rendering, shadows, bloom, and signals
+src/components/neural/anatomy-loader.ts Local compressed GLB + network loading and cache
+src/components/neural/geometry.ts      Mesh-edge arc-length interpolation; no brain generator
+src/components/neural/NeuralPanel.tsx   State controls, anatomy inspection, quality, fallback
+src/components/neural/BrainFallback.tsx Static render of the same anatomy
+src/components/neural/activity.ts      State/scenario definitions and synthetic amplitude
+src/hooks/useNeuralActivity.ts          Timed modes and interruption-safe reply transitions
+public/models/                         Licensed assets, LODs, routes, attribution, provenance
+licenses/anatomy/                      Original source notices, metadata, and license snapshot
+scripts/build-anatomy.py               AXIOM's own checksum-verified offline conversion
+scripts/requirements-anatomy.txt        Development-only data pipeline dependencies
 ```
 
-Runtime dependencies are React, React DOM, and Lucide icons. Animations use CSS; there is no animation library, external font, analytics script, or remote asset dependency.
+Anatomical sources are fetched only during development. `scripts/build-anatomy.py` verifies the two input SHA-256 hashes before extracting geometry, applies the documented registration, retains the native Full-detail cortex, makes a separate Eco decimation, and generates a surface network for **each** LOD. Runtime and normal app development need neither Python nor the original sources. The script expects the pinned GLB inputs at the `work/anatomy/` paths documented in `public/models/provenance.json`; sources and URLs are in the attribution. Original downloads stay ignored under `work/`.
 
-`AssistantProvider.reply(prompt, context)` is the boundary for future conversation providers. A real AI integration must call a protected backend that owns credentials, authentication, rate limits, and context policies. Do not place credentials in frontend code or `VITE_*` variables: those values are public in a browser bundle. Future tool integrations should use separate, scoped adapters and explicit user approval for sensitive actions.
+For optional regeneration in an isolated development environment, install `scripts/requirements-anatomy.txt` there and run `python scripts/build-anatomy.py`. Never install development tools on a user's machine automatically. Dataset code/credits do not relicense unrelated application code.
 
-## Data and security
+## Data, security, and future work
 
-- Task data is stored under `jarvis.tasks.v1` on the current browser origin. It is not encrypted and is not synced. Avoid storing secrets or highly sensitive data. Clearing browser site data deletes saved tasks.
-- Conversation and activity are held in memory and reset on reload. Preferences apply to the current session.
-- Invalid saved data is preserved; the interface warns you and requires an explicit choice before replacing it. If storage is blocked or full, changes remain usable in the session and a visible warning explains that they are not persisted.
-- There are no AI API calls, microphone permissions, paid integrations, device automation, or telemetry. The application works without an external connection once its assets have loaded.
-- `.gitignore` excludes environment files, dependencies, generated builds, and browser test artifacts. No credentials are needed for this milestone.
-- There is no deployment workflow. Changes are intended for review on a feature branch before any merge into `main`.
+Tasks stay in the current browser origin's local storage. They are not encrypted or synced; clearing site data deletes them. Invalid saved data is preserved until the user explicitly replaces it; blocked/full storage produces a visible session-only warning. Conversation, activity, previews, and preferences are session-only.
 
-## Roadmap
+The backend uses Groq’s OpenAI-compatible Responses API through the existing SDK (`openai/gpt-oss-20b` by default, configurable with `GROQ_MODEL`). All provider requests go to `https://api.groq.com/openai/v1`; there is no OpenAI fallback. It stays disabled unless server-side `GROQ_API_KEY` is configured **and** `GROQ_ENABLED=true` is explicitly set. Never use a `VITE_*` credential variable. `.env.example` contains placeholders only; `.gitignore` excludes real environment files. No real API calls are made by tests.
 
-1. Server-backed AI conversations with the professional, calm, concise assistant persona.
-2. Permission-based real-time voice interaction.
-3. Calendar, email, reminders, weather, and productivity adapters.
-4. Approved Mac application actions with explicit confirmation and narrow permissions.
-5. User preferences and optional, user-controlled memory.
+Browser voice is implemented with Web Speech recognition and SpeechSynthesis. Only available browser voices are listed; British English and common male voice names are preferred, but voice quality and gender cannot be guaranteed by the API. There are no paid speech APIs, audio uploads to AXIOM, new accounts, calendar/email connections, device controls or deployment workflow. The microphone is not accessed on load. Current voice setup, privacy, limitations and tests: [Phase 4 — browser voice](docs/PHASE-4-VOICE.md). Groq configuration: [Phase 3B](docs/PHASE-3B-GROQ.md).
 
-Future integrations must document their data handling and permissions before activation. This project uses original dialogue and visuals; it does not reproduce movie dialogue or an actor's voice.
+Changes remain on a draft review branch. Nothing is automatically merged into `main` or deployed.
 
-## Validation
-
-Vitest and React Testing Library cover storage validation, scripted responses, task creation/editing/completion/deletion/persistence, chat history, voice simulation, and animation preferences. Playwright covers actual browser reload persistence, navigation, responsive overflow checks, and preservation of damaged saved data. The pull request records the exact results for this milestone.
+Dependency security review and audit evidence: [dependency audit](docs/security/DEPENDENCY-AUDIT.md).

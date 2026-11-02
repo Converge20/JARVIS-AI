@@ -1,0 +1,97 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body {
+        margin: 0;
+        background: #10131a;
+      }
+      canvas {
+        display: block;
+      }
+      #label {
+        position: absolute;
+        top: 20px;
+        left: 25px;
+        color: #aaccdd;
+        font: 15px sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="label"></div>
+    <script type="module">
+      import * as THREE from "three";
+      import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(innerWidth, innerHeight);
+      renderer.setPixelRatio(1);
+      renderer.setClearColor("#10131a");
+      document.body.append(renderer.domElement);
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(
+        35,
+        innerWidth / innerHeight,
+        0.01,
+        1000,
+      );
+      scene.add(new THREE.AmbientLight("#b7bfd0", 0.6));
+      const light = new THREE.DirectionalLight("#fff5ea", 3);
+      light.position.set(3, 5, 4);
+      scene.add(light);
+      const rim = new THREE.DirectionalLight("#768baf", 1);
+      rim.position.set(-3, 2, -4);
+      scene.add(rim);
+      const source =
+        new URLSearchParams(location.search).get("model") === "mri"
+          ? "mri"
+          : "bodyparts";
+      document.getElementById("label").textContent =
+        source === "mri"
+          ? "Source MRI cortical surface · OpenNeuro ds006128 · CC0"
+          : "Source anatomical atlas · BodyParts3D, © DBCLS · CC BY 4.0";
+      const gltf = await new GLTFLoader().loadAsync(
+        "/work/anatomy/" +
+          (source === "mri" ? "mri-brain.glb" : "bodyparts-brain.glb"),
+      );
+      const keep =
+        source === "mri"
+          ? ["unified-cortex"]
+          : [
+              "frontal",
+              "parietal",
+              "temporal",
+              "occipital",
+              "cerebellum",
+              "medulla",
+              "pons",
+              "midbrain",
+            ];
+      gltf.scene.traverse((o) => {
+        if (o.isMesh) {
+          o.visible = keep.some((s) => o.name.includes(s));
+          o.material = new THREE.MeshStandardMaterial({
+            color: "#b3b6bc",
+            roughness: 0.8,
+            metalness: 0,
+          });
+        }
+      });
+      scene.add(gltf.scene);
+      const box = new THREE.Box3();
+      gltf.scene.traverse((o) => {
+        if (o.isMesh && o.visible) box.expandByObject(o);
+      });
+      const size = box.getSize(new THREE.Vector3()),
+        center = box.getCenter(new THREE.Vector3());
+      gltf.scene.position.sub(center);
+      const scale = 4 / Math.max(size.x, size.y, size.z);
+      gltf.scene.scale.setScalar(scale);
+      gltf.scene.position.multiplyScalar(scale);
+      camera.position.set(5.5, 1.7, 6);
+      camera.lookAt(0, 0, 0);
+      window.viewer = { scene, renderer, camera, model: gltf.scene };
+      renderer.render(scene, camera);
+    </script>
+  </body>
+</html>
