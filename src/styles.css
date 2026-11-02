@@ -1787,3 +1787,8 @@ footer .status-dot {
 .voice-setting select { background: #101c2a; color: #cce4f2; border: 1px solid #284354; border-radius: 6px; padding: 10px; }
 .demo-tag { white-space: normal; }
 .voice-button:disabled { opacity: .5; cursor: default; }
+.connection-feedback { margin: 12px 16px; padding: 12px 14px; border: 1px solid #29495c; border-radius: 8px; background: #0b1925; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.connection-feedback strong { color: #8adbef; }
+.connection-feedback p { margin: 6px 0; color: #b6cbd8; }
+.connection-feedback small { display: block; color: #93a9b8; }
+.connection-feedback button { margin-top: 8px; }

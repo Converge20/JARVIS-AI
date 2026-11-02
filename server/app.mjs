@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import OpenAI from "openai";
+import { configuredBrowserOrigins, requestOriginAllowed } from "./origins.mjs";
 
 const fail = (status, message, retryAfter) =>
   Object.assign(new Error(message), {
@@ -197,6 +198,7 @@ export function createApp({
   now = Date.now,
   dist = path.resolve("dist"),
 } = {}) {
+  configuredBrowserOrigins(env); // Fail closed on invalid explicit configuration.
   const enabled = env.GROQ_ENABLED === "true";
   const configured = Boolean(env.GROQ_API_KEY?.trim());
   const model = env.GROQ_MODEL || "openai/gpt-oss-20b";
@@ -416,18 +418,14 @@ export function createApp({
       const url = new URL(req.url, "http://localhost");
       if (url.pathname === "/api/status" && req.method === "GET")
         return json(res, 200, status());
-      if (url.pathname === "/api/chat" && req.method === "POST") {
-        const origin = req.headers.origin;
-        const allowed =
-          env.AXIOM_ALLOWED_ORIGIN || `http://${req.headers.host}`;
-        if (
-          !origin ||
-          origin !== allowed ||
-          req.headers["sec-fetch-site"] === "cross-site"
-        )
+      if (
+        ["/api/chat", "/api/status"].includes(url.pathname) &&
+        req.method === "POST"
+      ) {
+        if (!requestOriginAllowed(req, env))
           throw fail(
             403,
-            "Request origin is not allowed. Use the same-origin application preview.",
+            "Request origin is not allowed. Restart AXIOM inside this Codespace, or configure its exact HTTPS preview origin with AXIOM_ALLOWED_ORIGIN. Open the private frontend port, not the backend port.",
           );
         if (
           req.headers["content-type"]?.split(";")[0].trim() !==
@@ -449,6 +447,11 @@ export function createApp({
         } catch {
           throw fail(400, "Invalid JSON request.");
         }
+        if (url.pathname === "/api/status")
+          return json(res, 200, {
+            ...status(),
+            message: `Application server reachable; preview origin accepted. ${status().message}`,
+          });
         return json(res, 200, await chat(body));
       }
       if (url.pathname.startsWith("/api/"))

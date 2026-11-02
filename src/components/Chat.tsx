@@ -11,6 +11,8 @@ export function Chat({
   expanded = false,
   connection,
   onCheck,
+  checkingConnection,
+  connectionCheckedAt,
   error,
   proposals,
   onDecision,
@@ -23,6 +25,8 @@ export function Chat({
   onClear: () => void;
   connection: Connection;
   onCheck: () => void;
+  checkingConnection: boolean;
+  connectionCheckedAt: string;
   error: string;
   proposals: TaskProposal[];
   onDecision: (proposal: TaskProposal, confirmed: boolean) => void;
@@ -76,7 +80,7 @@ export function Chat({
           </div>
         ))}
         {thinking && (
-          <div className="typing" role="status">
+          <div className="typing" role="status" aria-label="AI request status">
             <i />
             <i />
             <i />
@@ -167,18 +171,41 @@ export function Chat({
             <ArrowUp size={18} />
           </button>
         </form>
-        <div className="chat-disclaimer">
-          <span className="status-dot" />
-          Session history · AI requests send messages and task context to Groq.
-          <span>{connection.message}</span>
+        <div
+          className="connection-feedback"
+          role="status"
+          aria-label="Connection check result"
+          aria-live="polite"
+          aria-busy={checkingConnection}
+        >
+          <strong>
+            {checkingConnection
+              ? "Checking connection…"
+              : CONNECTION_LABELS[connection.status]}
+          </strong>
+          <p>
+            {checkingConnection
+              ? "Checking the application server and preview access…"
+              : connection.message}
+          </p>
+          {!checkingConnection && connectionCheckedAt && (
+            <small>
+              Checked at {connectionCheckedAt} · Server and configuration check;
+              no Groq inference request.
+            </small>
+          )}
           <button
             type="button"
             className="text-button"
             onClick={onCheck}
-            disabled={thinking}
+            disabled={thinking || checkingConnection}
           >
-            Check connection
+            {checkingConnection ? "Checking…" : "Check connection"}
           </button>
+        </div>
+        <div className="chat-disclaimer">
+          <span className="status-dot" />
+          Session history · AI requests send messages and task context to Groq.
         </div>
       </div>
     </section>

@@ -66,12 +66,34 @@ export default function App() {
   const [chatError, setChatError] = useState("");
   const [proposals, setProposals] = useState<TaskProposal[]>([]);
   const [voicePreset, setVoicePreset] = useState(BRITISH_VOICE.voice);
+  const [checkingConnection, setCheckingConnection] = useState(false);
+  const [connectionCheckedAt, setConnectionCheckedAt] = useState("");
+  const checkBusy = useRef(false);
+  const connectionRevision = useRef(0);
   async function checkConnection() {
+    if (checkBusy.current) return;
+    checkBusy.current = true;
+    const token = ++connectionRevision.current;
+    setCheckingConnection(true);
     try {
       const next = await assistant.status();
-      if (alive.current) setConnection(next);
+      if (alive.current && token === connectionRevision.current) {
+        setConnection((previous) =>
+          next.status === "ready" &&
+          previous.status === "connected" &&
+          previous.model === next.model
+            ? {
+                ...next,
+                status: "connected",
+                message:
+                  "Application server reachable; preview origin accepted. Your last Groq reply succeeded. No new inference request was made by this check.",
+              }
+            : next,
+        );
+        setConnectionCheckedAt(new Date().toLocaleTimeString());
+      }
     } catch (error) {
-      if (alive.current)
+      if (alive.current && token === connectionRevision.current) {
         setConnection({
           status: "unavailable",
           message:
@@ -79,6 +101,11 @@ export default function App() {
               ? error.message
               : "Assistant server unavailable.",
         });
+        setConnectionCheckedAt(new Date().toLocaleTimeString());
+      }
+    } finally {
+      checkBusy.current = false;
+      if (alive.current) setCheckingConnection(false);
     }
   }
   useEffect(() => {
@@ -151,6 +178,7 @@ export default function App() {
   async function send(text: string) {
     if (busy.current || proposals.length || !text.trim()) return;
     busy.current = true;
+    ++connectionRevision.current; // An older probe must not overwrite this request result.
     setThinking(true);
     setChatError("");
     const token = neural.activate("analyzing");
@@ -237,6 +265,8 @@ export default function App() {
     onSend: send,
     connection,
     onCheck: checkConnection,
+    checkingConnection,
+    connectionCheckedAt,
     error: chatError,
     proposals,
     onDecision: decide,

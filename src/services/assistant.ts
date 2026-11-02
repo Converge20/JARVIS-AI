@@ -15,11 +15,15 @@ export interface AssistantReply {
   events: ("retrieval" | "task")[];
   model: string;
 }
-async function request<T>(url: string, init?: RequestInit): Promise<T> {
+async function request<T>(
+  url: string,
+  init?: RequestInit,
+  timeoutMs = 50000,
+): Promise<T> {
   try {
     const response = await fetch(url, {
       ...init,
-      signal: AbortSignal.timeout(50000),
+      signal: AbortSignal.timeout(timeoutMs),
     });
     const data = await response.json();
     if (!response.ok)
@@ -40,7 +44,18 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
   }
 }
 export const assistant = {
-  status: () => request<Connection>("/api/status"),
+  // POST deliberately exercises the same origin/content-type checks as conversation.
+  status: () =>
+    request<Connection>(
+      "/api/status",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+        cache: "no-store",
+      },
+      8000,
+    ),
   reply(messages: Message[], tasks: Task[]): Promise<AssistantReply> {
     const date = new Date();
     const today = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;

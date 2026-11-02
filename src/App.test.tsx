@@ -77,9 +77,9 @@ it("shows genuine mocked responses, preserves history and blocks repeated submis
     "Explain finance",
   );
   await user.click(screen.getByRole("button", { name: "Send message" }));
-  expect(screen.getByRole("status")).toHaveTextContent(
-    "processing your request",
-  );
+  expect(
+    screen.getByRole("status", { name: "AI request status" }),
+  ).toHaveTextContent("processing your request");
   expect(screen.getByRole("button", { name: "Plan my day" })).toBeDisabled();
   expect(document.querySelector(".neural-state-readout")).toHaveTextContent(
     "Analyzing",
@@ -230,4 +230,78 @@ it("keeps voice inactive and exposes future voice preferences", async () => {
   expect(
     screen.getByRole("button", { name: "Ambient animations Paused" }),
   ).toHaveAttribute("aria-pressed", "false");
+});
+it("Check connection shows loading, prevents duplicate checks and displays a fresh visible result", async () => {
+  let finish!: (value: unknown) => void;
+  const fetch = vi
+    .fn()
+    .mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        status: "ready",
+        message: "Application server reachable; preview origin accepted.",
+        model: "mock",
+      }),
+    })
+    .mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+  vi.stubGlobal("fetch", fetch);
+  const user = userEvent.setup();
+  render(<App />);
+  await screen.findByText(/Checked at/);
+  await user.click(screen.getByRole("button", { name: "Check connection" }));
+  const feedback = screen.getByRole("status", {
+    name: "Connection check result",
+  });
+  expect(feedback).toHaveAttribute("aria-busy", "true");
+  expect(feedback).toHaveTextContent("Checking connection…");
+  expect(screen.getByRole("button", { name: "Checking…" })).toBeDisabled();
+  finish({
+    ok: true,
+    json: async () => ({
+      status: "configuration_required",
+      message:
+        "Application server reachable. Configuration required: set GROQ_API_KEY.",
+    }),
+  });
+  expect(
+    await screen.findByText(
+      /Application server reachable. Configuration required/,
+    ),
+  ).toBeInTheDocument();
+  expect(feedback).toHaveAttribute("aria-busy", "false");
+  expect(feedback).toHaveTextContent("Checked at");
+  expect(fetch).toHaveBeenCalledTimes(2);
+});
+it("Check connection visibly reports rejected origins and backend outages", async () => {
+  const fetch = vi
+    .fn()
+    .mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ status: "ready", message: "Configured" }),
+    })
+    .mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({
+        error:
+          "Request origin is not allowed. Restart AXIOM inside this Codespace.",
+      }),
+    })
+    .mockRejectedValueOnce(new TypeError("fetch failed"));
+  vi.stubGlobal("fetch", fetch);
+  const user = userEvent.setup();
+  render(<App />);
+  await screen.findByText(/Checked at/);
+  await user.click(screen.getByRole("button", { name: "Check connection" }));
+  expect(
+    await screen.findByText(/Request origin is not allowed/),
+  ).toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: "Check connection" }));
+  expect(
+    await screen.findByText(/Assistant server unavailable or timed out/),
+  ).toBeInTheDocument();
 });
